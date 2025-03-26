@@ -6682,19 +6682,6 @@ table a:not([class]):has(img):hover {
 .md-text .aplayer {
   border-radius: 12px;
 }
-img.lazy {
-  transition: all 0.38s ease-out;
-  -moz-transition: all 0.38s ease-out;
-  -webkit-transition: all 0.38s ease-out;
-  -o-transition: all 0.38s ease-out;
-}
-img.lazy:not(.loaded) {
-  opacity: 0;
-}
-img.lazy.loaded,
-img.lazy.error {
-  opacity: 1;
-}
 :root {
   --swiper-theme-color: #1cd0fd !important;
 }
