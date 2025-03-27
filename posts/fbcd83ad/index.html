@@ -27,21 +27,11 @@
 <meta property="og:site_name" content="Wells&#39;s Blog">
 <meta property="og:description" content="前言： 靶场链接：https:&#x2F;&#x2F;kalmarc.tf&#x2F;challenges 难度太大了根本写不出来参考大佬的题解最后复盘出来的 原文链接：https:&#x2F;&#x2F;ireland.re&#x2F;posts&#x2F;KalmarCTF_2024&#x2F;  复盘题解Ez ⛳ v2题目描述 Caddy webserver is AWESOME, using a neat and compact syntax you can do">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/image-20240324151813152.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/image-20240324153600061.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/image-20240324193741286.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/image-20240324232149397.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/image-20240324223950122.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/3f38953983e9ec433be5d50aee943d1f.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/4fb256abd0148e6f540cc518868c64bb.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/4ac0b231a81aeef5ed48fde37b6f6650.png">
-<meta property="og:image" content="https://blog.wells.host/posts/fbcd83ad/3e0b6376b99ca459bfbfb08201947ec8.png">
 <meta property="article:published_time" content="2024-03-19T05:16:51.000Z">
 <meta property="article:modified_time" content="2025-03-25T13:01:54.012Z">
 <meta property="article:author" content="Wells">
 <meta property="article:tag" content="CTF-WriteUp">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://blog.wells.host/posts/fbcd83ad/image-20240324151813152.png">
   
   
   
@@ -89,7 +79,7 @@
 
 
 
-<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/8dd8445/"><span class="title">春秋云镜-MagicRelay</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a><a class="item title" href="/posts/931c692/"><span class="title">文件上传漏洞</span></a><a class="item title" href="/posts/895d3c4b/"><span class="title">中间件漏洞</span></a><a class="item title" href="/posts/fbcd83ad/"><span class="title">2024KalmarCTF-WEB复盘</span></a></div></widget>
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/6f44101f/"><span class="title">Webshell提权</span></a><a class="item title" href="/posts/a75a4ee7/"><span class="title">反弹shell升级交互式</span></a><a class="item title" href="/posts/8dd8445/"><span class="title">春秋云镜-MagicRelay</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a><a class="item title" href="/posts/931c692/"><span class="title">文件上传漏洞</span></a></div></widget>
 </div>
 
 </div></aside><div class="l_main" id="main">
@@ -179,7 +169,7 @@
 <li>通配符</li>
 </ul>
 <h3 id="解题思路-1"><a href="#解题思路-1" class="headerlink" title="解题思路"></a>解题思路</h3><p>这是一个<strong>黑盒测试</strong>，点击题目链接后发现就一个按钮可以交互</p>
-<img src="/posts/fbcd83ad/image-20240324151813152.png" class="" title="image-20240324151813152">
+
 
 <p>点击这个按钮，跳转到<code>http://chal-kalmarc.tf:8080/assets/26c3f25922f71af3372ac65a75cd3b11/iceberg.jpg</code>，没用任何信息。查看初始页面的源码发现被隐藏了另一个按钮</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- &lt;a href=&quot;assets/f200d055a267ae56160198e0fcb47e5f/try_harder.txt&quot;&gt;</span><br><span class="line">	&lt;button&gt;Get the flag&lt;/button&gt;</span><br><span class="line">&lt;/a&gt; --&gt;</span><br></pre></td></tr></table></figure>
@@ -189,7 +179,7 @@
 <p>这个过程中发现了一个比较有趣的，响应头中存在这样一个键值：<code>X-Powered-By: Bash</code>，shell语言做后端？？</p>
 <p>发现随便输入一个内容到url后<strong>如果不存在</strong>会输出为：<code>cat: /app/static/1: No such file or directory</code>，可以大胆推测后端为shell语言了</p>
 <p>然后我就开始怀疑是不是有<strong>目录创越的漏洞</strong>存在了，拦截请求包转到BP进行改包（浏览器的url中直接输入<code>..</code>会被删除，而并不会直接传会后端）将url修改为<code>/../../../../../etc/passwd</code>,返回包中出现了<code>passwd</code>中对应的内容</p>
-<img src="/posts/fbcd83ad/image-20240324153600061.png" class="" title="image-20240324153600061">
+
 
 <h4 id="逻辑漏洞1："><a href="#逻辑漏洞1：" class="headerlink" title="逻辑漏洞1："></a>逻辑漏洞1：</h4><p>发现<strong>目录穿越漏洞确实存在</strong>，可以尝试直接读一下<code>/flag</code>发现根目录下不存在<code>flag</code>文件，那就只能进<code>/proc</code>目录找找对应的进程和运行目录了，一般读取<code>1</code>进程（一般赛题docker中最初的线程号为1）和<code>self</code>进程（当前指令所属的进程），一通乱尝试<code>cmdline</code>、<code>environ</code>、<code>status</code>等等发现了一些有用的东西</p>
 <p>在<code>/../../../../../proc/1/cmdline</code>尝试读取后端的运行程序</p>
@@ -208,7 +198,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ubuntu/Desktop# url=$(ls)</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# path=&quot;app/static/$url&quot;</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# cat &quot;$path&quot;</span><br><span class="line">cat: &#x27;app/static/1.sh&#x27;$&#x27;\n&#x27;&#x27;2&#x27;: 没有那个文件或目录</span><br></pre></td></tr></table></figure>
 
 <p>实际结果</p>
-<img src="/posts/fbcd83ad/image-20240324193741286.png" class="" title="image-20240324193741286">
+
 
 <details class="tag-plugin colorful folding" ><summary><span>open , 拓展：shell语言中的部分特性</span></summary><div class="body"><p><strong>特性4：read命令处理字符串</strong></p><p>使用read命令来读取输入的字符串时，所读取的字符串相当于被单引号包围，具有单引号包裹的字符串的特点</p><ul><li><strong>变量不展开</strong>：单引号内的内容都会被当作普通字符串处理，包括变量，它们不会被展开。</li><li><strong>命令不替换</strong>：单引号内的命令不会被执行，即使使用<code>$()</code>或反引号&#96;&#96;。</li><li><strong>通配符不展开</strong>：单引号内的通配符同样不会被展开，被视为普通文本。</li><li><strong>转义字符不工作</strong>：单引号内几乎所有的字符都被视为普通字符，包括反斜线（<code>\</code>），它不具有转义功能。</li></ul><p>例如：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test1</span></span><br><span class="line">read -d $&#x27;\n&#x27; -a request_line</span><br><span class="line">method=$&#123;request_line[0]&#125;</span><br><span class="line">echo $method</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输入：$(<span class="built_in">ls</span>) $(<span class="built_in">ls</span>) $(<span class="built_in">ls</span>)</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出：$(<span class="built_in">ls</span>)</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test2</span></span><br><span class="line">request_line=(&quot;$(ls)&quot; &quot;$(ls)&quot;)</span><br><span class="line">method=$&#123;request_line[0]&#125;</span><br><span class="line">echo $method</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出：badass_server.sh bash.md</span></span><br></pre></td></tr></table></figure></div></details>
 
@@ -250,10 +240,10 @@
 <li><code>__pycache__</code>文件夹</li>
 </ul>
 <h3 id="解题思路-2"><a href="#解题思路-2" class="headerlink" title="解题思路"></a>解题思路</h3><p>同样的这也是一个<strong>黑盒测试</strong>，看了看页面发现并没有什么提示，可以根据自己的输入的网址进行判断，网址是否在线或者离线</p>
-<img src="/posts/fbcd83ad/image-20240324232149397.png" class="" title="image-20240324232149397">
+
 
 <p>直接抓包然后repeat看看</p>
-<img src="/posts/fbcd83ad/image-20240324223950122.png" class="" title="image-20240324223950122">
+
 
 <p>会发现页面出现了我们输入网页的源代码，<strong>相关的漏洞应该就是SSRF</strong></p>
 <p>尝试直接使用<code>file:///etc/passwd</code>试试看，发现页面回显出了</p>
@@ -292,7 +282,7 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib.request <span class="keyword">import</span> urlopen, HTTPErrorProcessor, build_opener, Request</span><br><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NoRedirection</span>(<span class="title class_ inherited__">HTTPErrorProcessor</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">http_response</span>(<span class="params">self, request, response</span>):</span><br><span class="line">        <span class="keyword">return</span> response</span><br><span class="line"></span><br><span class="line">    https_response = http_response</span><br><span class="line"></span><br><span class="line">install_opener(build_opener(NoRedirection()))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fetch</span>(<span class="params">url, follow_redirects=<span class="literal">True</span></span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    Avoid endless redirect loops</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;requestlib 2.9-alpha&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">    req = Request(url, headers=headers)</span><br><span class="line">    <span class="keyword">with</span> urlopen(req) <span class="keyword">as</span> res:</span><br><span class="line">        redirect_url = res.headers.get(<span class="string">&quot;Location&quot;</span>))</span><br><span class="line">        <span class="keyword">if</span> redirect_url <span class="keyword">and</span> follow_redirects:</span><br><span class="line">            <span class="keyword">return</span> fetch(redirect_url, follow_redirects=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">str</span>(res.read())[<span class="number">2</span>:-<span class="number">1</span>]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <h4 id="漏洞成因"><a href="#漏洞成因" class="headerlink" title="漏洞成因"></a>漏洞成因</h4><p>在定义的<code>fetch</code>函数中<code>follow_redirects</code>值默认为<code>True</code>，并且跟随响应包中的<code>Location</code>键值进行判断是否存在重定向，重定向的目标是何。但由于只限制了第一次输入的网址为<code>https://</code>,并<strong>未进行对重定向的协议进行检查</strong>从而造成了<code>SSRF</code></p>
-<details class="tag-plugin colorful folding" ><summary><span>如何处理重定向</span></summary><div class="body"><p><strong>注意：</strong></p><p>如浏览器，powershell中的curl再处理重定向时，无法处理从<code>https://</code>重定向至<code>file://</code></p><p>powershell中的curl发生报错</p><img src="/posts/fbcd83ad/3f38953983e9ec433be5d50aee943d1f.png" class="" title="3f38953983e9ec433be5d50aee943d1f"><p>浏览器会提示页面错误</p><img src="/posts/fbcd83ad/4fb256abd0148e6f540cc518868c64bb.png" class="" title="4fb256abd0148e6f540cc518868c64bb"></div></details>
+<details class="tag-plugin colorful folding" ><summary><span>如何处理重定向</span></summary><div class="body"><p><strong>注意：</strong></p><p>如浏览器，powershell中的curl再处理重定向时，无法处理从<code>https://</code>重定向至<code>file://</code></p><p>powershell中的curl发生报错</p><p>浏览器会提示页面错误</p></div></details>
 
 <p>做到这里，<strong>关键其实是为造出一个session</strong>，其键值存在<code>admin: True</code>,但存有<code>session_encryption_key</code>的<code>config.py</code>再被调用后就被删除了,需要找到如何复原的办法</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@app.route(&#x27;/flag&#x27;, methods=[&#x27;GET&#x27;])</span><br><span class="line">def healthcheck():</span><br><span class="line">    if session.get(&quot;admin&quot;) == True: #</span><br><span class="line">        return subprocess.check_output(&quot;/readflag&quot;)</span><br><span class="line">    else:</span><br><span class="line">        return abort(403)</span><br></pre></td></tr></table></figure>
@@ -319,10 +309,10 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python flask_session_cookie_manager3.py encode -s &#x27;Rm7GbQJ4uDikyiis6miD7YwsN11rEjfL&#x27; -t &quot;&#123;&#x27;admin&#x27;:True&#125;&quot;</span><br></pre></td></tr></table></figure>
 
 <p>最后得到伪造的session所对应的cookie为：<code>eyJhZG1pbiI6dHJ1ZX0.ZgBMeg.t2OWSLBvEeZpMPUZNBFFcmsFS-o</code>，手动填入浏览器中，并访问&#x2F;flag</p>
-<img src="/posts/fbcd83ad/4ac0b231a81aeef5ed48fde37b6f6650.png" class="" title="4ac0b231a81aeef5ed48fde37b6f6650">
+
 
 <p>最后得到flag：<code>kalmar&#123;Rem3Mbr_T0_fl0sh!&#125;</code></p>
-<details class="tag-plugin colorful folding" ><summary><span>查看Wells的丢人过程</span></summary><div class="body"><p>我想着不是伪造出session最后的结果时运行<code>/readflag</code>这个可执行文件，便尝试读取了一下，转化为二进制，再发给逆向的同学看看能不能找出flag<strong>位于哪里命名为什么</strong>直接读取出来</p><p>也确实逆向出来，找到了flag的位置以及名称</p><img src="/posts/fbcd83ad/3e0b6376b99ca459bfbfb08201947ec8.png" class="" title="3e0b6376b99ca459bfbfb08201947ec8"><p>但出题人也估计想到了这一点，位于<code>flag.txt</code>设置了权限，没法被直接读取出来。。。。。。。</p><p><strong>跪谢逆向的同学：L0SJ0K</strong></p></div></details>
+<details class="tag-plugin colorful folding" ><summary><span>查看Wells的丢人过程</span></summary><div class="body"><p>我想着不是伪造出session最后的结果时运行<code>/readflag</code>这个可执行文件，便尝试读取了一下，转化为二进制，再发给逆向的同学看看能不能找出flag<strong>位于哪里命名为什么</strong>直接读取出来</p><p>也确实逆向出来，找到了flag的位置以及名称</p><p>但出题人也估计想到了这一点，位于<code>flag.txt</code>设置了权限，没法被直接读取出来。。。。。。。</p><p><strong>跪谢逆向的同学：L0SJ0K</strong></p></div></details>
 
 
 <div class="article-footer fs14">
