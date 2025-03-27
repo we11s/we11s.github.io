@@ -6,7 +6,7 @@
   <link href="https://blog.wells.host/atom.xml" rel="self"/>
   
   <link href="https://blog.wells.host/"/>
-  <updated>2025-03-25T11:29:21.201Z</updated>
+  <updated>2025-03-27T10:36:05.010Z</updated>
   <id>https://blog.wells.host/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>春秋云镜-MagicRelay</title>
+    <link href="https://blog.wells.host/posts/8dd8445/"/>
+    <id>https://blog.wells.host/posts/8dd8445/</id>
+    <published>2025-03-27T06:32:08.000Z</published>
+    <updated>2025-03-27T10:36:05.010Z</updated>
+    
+    <content type="html"><![CDATA[<p>MagicRelay</p><blockquote><p><em>靶标介绍：</em></p><p>Legacy Network 是一家在信息技术领域拥有 20 年历史的老牌企业，专注于为中小型公司提供IT解决方案和支持服务。由于长期依赖于过时的基础设施和内部网络，Legacy Network 在现代化的安全防护体系方面存在许多不足，特别是在权限控制、过时的软件、未及时更新补丁等方面存在显著问题。你的目标是通过渗透进入该网络，获取每台机器的权限，该靶场共有 4个Flag，分布于不同的靶机。</p></blockquote>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;MagicRelay&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;靶标介绍：&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Legacy Network 是一家在信息技术领域拥有 20 年历史的老牌企业，专注于为中小型公司提供IT解决方案和支持服务。由于长期依赖于过时的基础设施和内部网络，L</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>2024ImaginaryCtf-WEB复盘</title>
